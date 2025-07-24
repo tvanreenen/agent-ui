@@ -33,6 +33,11 @@ export class AgentUI extends LitElement {
       pointer-events: auto;
     }
     
+    /* Panel mode - hide backdrop */
+    .backdrop.panel-mode {
+      display: none;
+    }
+    
     .container {
       position: fixed;
       bottom: 0;
@@ -50,9 +55,13 @@ export class AgentUI extends LitElement {
       /* Add smooth transitions for expand/collapse */
       transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1), 
                   border-radius 0.8s ease,
-                  grid-template-rows 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+                  grid-template-rows 0.8s cubic-bezier(0.4, 0, 0.2, 1),
+                  right 0.8s cubic-bezier(0.4, 0, 0.2, 1),
+                  left 0.8s cubic-bezier(0.4, 0, 0.2, 1),
+                  transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
       z-index: 1000;
     }
+    
     .container.expanded {
       width: 80vw;
       height: 80vh;
@@ -62,6 +71,26 @@ export class AgentUI extends LitElement {
       background: white;
       border-radius: 12px 12px 0 0;
       grid-template-rows: auto 1fr;
+    }
+    
+    /* Panel mode styles */
+    .container.panel-mode {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: auto;
+      transform: none;
+      width: 400px;
+      height: 100vh;
+      border-radius: 0;
+      box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
+      z-index: 1001;
+    }
+    
+    /* Add margin to body when in panel mode */
+    :host(.panel-mode) {
+      margin-right: 400px;
     }
     
     /* Responsive breakpoints */
@@ -80,6 +109,14 @@ export class AgentUI extends LitElement {
         transform: translateX(-50%);
         background: white;
       }
+      .container.panel-mode {
+        width: 100vw;
+        left: 0;
+        right: 0;
+      }
+      :host(.panel-mode) {
+        margin-right: 0;
+      }
     }
     
     @media (max-width: 480px) {
@@ -96,6 +133,11 @@ export class AgentUI extends LitElement {
         transform: translateX(-50%);
         border-radius: 0;
         background: white;
+      }
+      .container.panel-mode {
+        width: 100vw;
+        left: 0;
+        right: 0;
       }
     }
     .header {
@@ -241,9 +283,37 @@ export class AgentUI extends LitElement {
     .toggle-button:active {
       transform: scale(0.95);
     }
+    
+    .panel-toggle-button {
+      position: absolute;
+      top: 8px;
+      right: 40px;
+      background: #333;
+      border: none;
+      color: white;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: bold;
+      /* Add transition for button hover and transform */
+      transition: all 0.2s ease;
+    }
+    .panel-toggle-button:hover {
+      background: #555;
+      transform: scale(1.1);
+    }
+    .panel-toggle-button:active {
+      transform: scale(0.95);
+    }
   `;
 
   @property({ type: Boolean }) private open = false;
+  @property({ type: Boolean }) private panelMode = false;
   @property({ type: Array }) prompts: string[] = [];
   @property({ type: String }) agentName: string = 'Agent';
   @property({ type: String }) placeholderText: string = 'Ask me anything - I can help with data, actions, and insights';
@@ -252,6 +322,13 @@ export class AgentUI extends LitElement {
   setOpen(value: boolean) {
     this.open = value;
     this.requestUpdate();
+    
+    // If closing and in panel mode, also exit panel mode
+    if (!value && this.panelMode) {
+      this.panelMode = false;
+      document.body.style.marginRight = '0';
+      document.body.style.transition = '';
+    }
   }
 
   addMessage(type: 'user' | 'agent', text: string) {
@@ -282,6 +359,12 @@ export class AgentUI extends LitElement {
     
     // Remove global keyboard listeners
     document.removeEventListener('keydown', this._handleGlobalKeydown.bind(this));
+    
+    // Clean up body margin if in panel mode
+    if (this.panelMode) {
+      document.body.style.marginRight = '0';
+      document.body.style.transition = '';
+    }
   }
 
   private _handleGlobalKeydown(e: KeyboardEvent) {
@@ -303,8 +386,8 @@ export class AgentUI extends LitElement {
 
   render() {
     return html`
-      <div class="backdrop ${this.open ? 'visible' : ''}" @click=${this._handleBackdropClick}></div>
-      <div class="container ${this.open ? 'expanded' : ''}">
+      <div class="backdrop ${this.open ? 'visible' : ''} ${this.panelMode ? 'panel-mode' : ''}" @click=${this._handleBackdropClick}></div>
+      <div class="container ${this.open ? 'expanded' : ''} ${this.panelMode ? 'panel-mode' : ''}">
         ${this.open ? html`
           <div class="body">
             ${this.messages.map(msg => html`
@@ -323,6 +406,7 @@ export class AgentUI extends LitElement {
               @keydown=${this._onKeydown}
             />
             <button class="send-button" @click=${this._sendMessage}>
+              <!-- Send icon -->
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-send-horizontal-icon lucide-send-horizontal"><path d="M3.714 3.048a.498.498 0 0 0-.683.627l2.843 7.627a2 2 0 0 1 0 1.396l-2.842 7.627a.498.498 0 0 0 .682.627l18-8.5a.5.5 0 0 0 0-.904z"/><path d="M6 12h16"/></svg>
             </button>
           </div>
@@ -338,11 +422,24 @@ export class AgentUI extends LitElement {
         </div>
         <button class="toggle-button" @click=${this._toggle}>
           ${this.open ? html`
+            <!-- lucide: minimize-2 -->
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-minimize2-icon lucide-minimize-2"><path d="m14 10 7-7"/><path d="M20 10h-6V4"/><path d="m3 21 7-7"/><path d="M4 14h6v6"/></svg>
           ` : html`
+            <!-- lucide: maximize-2 -->
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-maximize2-icon lucide-maximize-2"><path d="M15 3h6v6"/><path d="m21 3-7 7"/><path d="m3 21 7-7"/><path d="M9 21H3v-6"/></svg>
           `}
         </button>
+        ${this.open ? html`
+          <button class="panel-toggle-button" @click=${this._togglePanel} title=${this.panelMode ? 'Switch to dialog mode' : 'Switch to panel mode'}>
+            ${this.panelMode ? html`
+              <!-- lucide: panel-bottom -->
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-panel-bottom-icon lucide-panel-bottom"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 15h18"/></svg>
+            ` : html`
+              <!-- lucide: panel-right -->
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-panel-right-icon lucide-panel-right"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M15 3v18"/></svg>
+            `}
+          </button>
+        ` : ''}
       </div>
     `;
   }
@@ -390,6 +487,23 @@ export class AgentUI extends LitElement {
   private _handleBackdropClick(e: MouseEvent) {
     if (this.open && e.target === this.shadowRoot?.querySelector('.backdrop')) {
       this.setOpen(false);
+    }
+  }
+
+  private _togglePanel() {
+    this.panelMode = !this.panelMode;
+    this.requestUpdate();
+    
+    // Add/remove panel-mode class to body for margin adjustment
+    if (this.panelMode) {
+      document.body.style.marginRight = '400px';
+      document.body.style.transition = 'margin-right 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
+    } else {
+      document.body.style.marginRight = '0';
+      // Remove transition after animation completes
+      setTimeout(() => {
+        document.body.style.transition = '';
+      }, 800);
     }
   }
 }
