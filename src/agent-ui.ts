@@ -1,8 +1,8 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, state, property } from 'lit/decorators.js';
 
-@customElement('chat-widget')
-export class ChatWidget extends LitElement {
+@customElement('agent-ui')
+export class AgentUI extends LitElement {
   static styles = css`
     :host { 
       display: block;
@@ -222,14 +222,16 @@ export class ChatWidget extends LitElement {
 
   @property({ type: Boolean }) private open = false;
   @property({ type: Array }) prompts: string[] = [];
-  @state() private messages: Array<{type: 'user' | 'kareem', text: string}> = [];
+  @property({ type: String }) agentName: string = 'Agent';
+  @property({ type: String }) placeholderText: string = 'Ask me anything - I can help with data, actions, and insights';
+  @state() private messages: Array<{type: 'user' | 'agent', text: string}> = [];
 
   setOpen(value: boolean) {
     this.open = value;
     this.requestUpdate();
   }
 
-  addMessage(type: 'user' | 'kareem', text: string) {
+  addMessage(type: 'user' | 'agent', text: string) {
     this.messages = [...this.messages, { type, text }];
     this.requestUpdate();
     // Auto-scroll after message is added
@@ -283,7 +285,7 @@ export class ChatWidget extends LitElement {
           <div class="body">
             ${this.messages.map(msg => html`
               <div class="message ${msg.type}-message">
-                <strong class="message-author">${msg.type === 'user' ? 'You' : 'Kareem'}:</strong> ${msg.text}
+                <strong class="message-author">${msg.type === 'user' ? 'You' : this.agentName}:</strong> ${msg.text}
               </div>
             `)}
           </div>
@@ -293,7 +295,7 @@ export class ChatWidget extends LitElement {
             <input 
               class="input-field" 
               type="text" 
-              placeholder="Ask Kareem to find data, perform actions, or get insights - he can do almost anything"
+              placeholder=${this.placeholderText}
               @keydown=${this._onKeydown}
             />
             <button class="send-button" @click=${this._sendMessage}>
@@ -363,18 +365,20 @@ export class ChatWidget extends LitElement {
 }
 
 declare global {
-  interface Window { ChatWidget: any; }
+  interface Window { AgentUI: any; }
 }
 
 // Expose a simple global API
-window.ChatWidget = {
-  init: (opts: { prompts: string[] }) => {
-    let el = document.querySelector('chat-widget') as ChatWidget;
+window.AgentUI = {
+  init: (opts: { prompts: string[], agentName: string, placeholderText: string }) => {
+    let el = document.querySelector('agent-ui') as AgentUI;
     if (!el) {
-      el = document.createElement('chat-widget') as ChatWidget;
+      el = document.createElement('agent-ui') as AgentUI;
       document.body.appendChild(el);
     }
     el.prompts = opts.prompts;
+    el.agentName = opts.agentName;
+    el.placeholderText = opts.placeholderText;
     el.requestUpdate(); // This is necessary for the reactive system to work
     return el;
   }

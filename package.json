@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "build": "esbuild src/chat-widget.ts --bundle --outfile=dist/chat-widget.umd.js --format=iife --target=es2020 --sourcemap --minify",
+    "build": "esbuild src/agent-ui.ts --bundle --outfile=dist/agent-ui.umd.js --format=iife --target=es2020 --sourcemap --minify",
     "start": "npx serve examples -p 3000"
   },
   "dependencies": {

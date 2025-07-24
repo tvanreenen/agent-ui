@@ -45,17 +45,19 @@
   </div>
 
   <!-- Include the bundle -->
-  <script src="chat-widget.umd.js"></script>
+  <script src="agent-ui.umd.js"></script>
 
   <!-- Initialize the widget -->
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      const widget = ChatWidget.init({
+      const widget = AgentUI.init({
         prompts: [
           'Explain the dashboard widgets',
-          'Analyze my program health',
-          'Show my what actions you can perform'
-        ]
+          'Analyze my account health',
+          'Show me what actions you can perform'
+        ],
+        agentName: 'Tim',
+        placeholderText: 'Ask Tim to find data, perform actions, or get insights - he can do almost anything'
       });
 
       // Listen for user messages
@@ -64,7 +66,7 @@
         
         // Simulate Kareem's response
         setTimeout(() => {
-          widget.addMessage('kareem', `Thanks for your message! I'll get back to you soon about "${e.detail.query}".`);
+          widget.addMessage('agent', `Thanks for your message! I'll get back to you soon about "${e.detail.query}".`);
         }, 1000);
       });
     });
