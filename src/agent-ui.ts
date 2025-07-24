@@ -11,6 +11,28 @@ export class AgentUI extends LitElement {
       box-sizing: border-box;
       font-size: 14px;
     }
+    
+    /* Backdrop overlay for expanded state */
+    .backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.5);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+      z-index: 999;
+      pointer-events: none;
+    }
+    
+    .backdrop.visible {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+    }
+    
     .container {
       position: fixed;
       bottom: 0;
@@ -29,6 +51,7 @@ export class AgentUI extends LitElement {
       transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1), 
                   border-radius 0.8s ease,
                   grid-template-rows 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 1000;
     }
     .container.expanded {
       width: 80vw;
@@ -189,7 +212,7 @@ export class AgentUI extends LitElement {
       color: #125361;
     }
     
-    .kareem-message .message-author {
+    .agent-message .message-author {
       color: #702c62;
     }
     .toggle-button {
@@ -280,6 +303,7 @@ export class AgentUI extends LitElement {
 
   render() {
     return html`
+      <div class="backdrop ${this.open ? 'visible' : ''}" @click=${this._handleBackdropClick}></div>
       <div class="container ${this.open ? 'expanded' : ''}">
         ${this.open ? html`
           <div class="body">
@@ -360,6 +384,12 @@ export class AgentUI extends LitElement {
   private _onKeydown(e: KeyboardEvent) {
     if (e.key === 'Enter') {
       this._sendMessage();
+    }
+  }
+
+  private _handleBackdropClick(e: MouseEvent) {
+    if (this.open && e.target === this.shadowRoot?.querySelector('.backdrop')) {
+      this.setOpen(false);
     }
   }
 }
