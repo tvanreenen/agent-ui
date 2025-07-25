@@ -58,14 +58,27 @@ export class AgentUI extends LitElement {
                   grid-template-rows 0.8s cubic-bezier(0.4, 0, 0.2, 1),
                   right 0.8s cubic-bezier(0.4, 0, 0.2, 1),
                   left 0.8s cubic-bezier(0.4, 0, 0.2, 1),
-                  transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+                  transform 0.8s cubic-bezier(0.4, 0, 0.2, 1),
+                  bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       z-index: 1000;
+      /* Default collapsed state - partially hidden */
+      bottom: -68px;
+    }
+    
+    /* Hover state - slide into view */
+    .container:hover {
+      bottom: 0;
+    }
+    
+    /* Focused state - slide into view */
+    .container.input-focused {
+      bottom: 0;
     }
     
     .container.expanded {
       width: 80vw;
       height: 80vh;
-      bottom: 0;
+      bottom: 0 !important;
       left: 50%;
       transform: translateX(-50%);
       background: white;
@@ -78,7 +91,7 @@ export class AgentUI extends LitElement {
       position: fixed;
       top: 0;
       right: 0;
-      bottom: 0;
+      bottom: 0 !important;
       left: auto;
       transform: none;
       width: 400px;
@@ -97,14 +110,17 @@ export class AgentUI extends LitElement {
     @media (max-width: 768px) {
       .container {
         width: 95vw;
-        bottom: 0;
+        bottom: -68px;
         left: 50%;
         transform: translateX(-50%);
+      }
+      .container:hover {
+        bottom: 0;
       }
       .container.expanded {
         width: 80vw;
         height: 80vh;
-        bottom: 0;
+        bottom: 0 !important;
         left: 50%;
         transform: translateX(-50%);
         background: white;
@@ -113,6 +129,7 @@ export class AgentUI extends LitElement {
         width: 100vw;
         left: 0;
         right: 0;
+        bottom: 0 !important;
       }
       :host(.panel-mode) {
         margin-right: 0;
@@ -123,12 +140,15 @@ export class AgentUI extends LitElement {
       .container {
         width: 100vw;
         border-radius: 0;
+        bottom: -68px;
+      }
+      .container:hover {
         bottom: 0;
       }
       .container.expanded {
         width: 80vw;
         height: 80vh;
-        bottom: 0;
+        bottom: 0 !important;
         left: 50%;
         transform: translateX(-50%);
         border-radius: 0;
@@ -138,6 +158,7 @@ export class AgentUI extends LitElement {
         width: 100vw;
         left: 0;
         right: 0;
+        bottom: 0 !important;
       }
     }
     .header {
@@ -314,6 +335,7 @@ export class AgentUI extends LitElement {
 
   @property({ type: Boolean }) private open = false;
   @property({ type: Boolean }) private panelMode = false;
+  @property({ type: Boolean }) private inputFocused = false;
   @property({ type: Array }) prompts: string[] = [];
   @property({ type: String }) agentName: string = 'Agent';
   @property({ type: String }) placeholderText: string = 'Ask me anything - I can help with data, actions, and insights';
@@ -329,6 +351,25 @@ export class AgentUI extends LitElement {
       document.body.style.marginRight = '0';
       document.body.style.transition = '';
     }
+    
+    // Reset input focused state when opening (since it will be fully visible)
+    if (value) {
+      this.inputFocused = false;
+    }
+    
+    // Ensure proper bottom positioning when opening/closing
+    this.updateComplete.then(() => {
+      const container = this.shadowRoot?.querySelector('.container') as HTMLElement;
+      if (container) {
+        if (value) {
+          // When opening, ensure it's at bottom: 0
+          container.style.bottom = '0';
+        } else {
+          // When closing, reset to default collapsed state
+          container.style.bottom = '';
+        }
+      }
+    });
   }
 
   addMessage(type: 'user' | 'agent', text: string) {
@@ -374,6 +415,8 @@ export class AgentUI extends LitElement {
       const input = this.shadowRoot?.querySelector('.input-field') as HTMLInputElement;
       if (input) {
         input.focus();
+        this.inputFocused = true;
+        this.requestUpdate();
       }
     }
     
@@ -387,7 +430,7 @@ export class AgentUI extends LitElement {
   render() {
     return html`
       <div class="backdrop ${this.open ? 'visible' : ''} ${this.panelMode ? 'panel-mode' : ''}" @click=${this._handleBackdropClick}></div>
-      <div class="container ${this.open ? 'expanded' : ''} ${this.panelMode ? 'panel-mode' : ''}">
+      <div class="container ${this.open ? 'expanded' : ''} ${this.panelMode ? 'panel-mode' : ''} ${this.inputFocused ? 'input-focused' : ''}">
         ${this.open ? html`
           <div class="body">
             ${this.messages.map(msg => html`
@@ -404,6 +447,8 @@ export class AgentUI extends LitElement {
               type="text" 
               placeholder=${this.placeholderText}
               @keydown=${this._onKeydown}
+              @focus=${this._onInputFocus}
+              @blur=${this._onInputBlur}
             />
             <button class="send-button" @click=${this._sendMessage}>
               <!-- Send icon -->
@@ -445,7 +490,21 @@ export class AgentUI extends LitElement {
   }
 
   private _toggle() {
+    const wasOpen = this.open;
     this.setOpen(!this.open);
+    
+    // If we're opening from minimized state, focus the input
+    if (!wasOpen && this.open) {
+      this.updateComplete.then(() => {
+        const input = this.shadowRoot?.querySelector('.input-field') as HTMLInputElement;
+        if (input) {
+          input.focus();
+          // Set input focused state to keep widget visible
+          this.inputFocused = true;
+          this.requestUpdate();
+        }
+      });
+    }
   }
 
   private _handleSuggestion(prompt: string) {
@@ -468,6 +527,8 @@ export class AgentUI extends LitElement {
     // Expand the widget when send is clicked
     if (!this.open) {
       this.setOpen(true);
+      // Reset input focused state since widget will be expanded
+      this.inputFocused = false;
       // Preserve focus after expansion
       this.updateComplete.then(() => {
         const newInput = this.shadowRoot?.querySelector('.input-field') as HTMLInputElement;
@@ -482,6 +543,16 @@ export class AgentUI extends LitElement {
     if (e.key === 'Enter') {
       this._sendMessage();
     }
+  }
+
+  private _onInputFocus() {
+    this.inputFocused = true;
+    this.requestUpdate();
+  }
+
+  private _onInputBlur() {
+    this.inputFocused = false;
+    this.requestUpdate();
   }
 
   private _handleBackdropClick(e: MouseEvent) {
@@ -505,6 +576,17 @@ export class AgentUI extends LitElement {
         document.body.style.transition = '';
       }, 800);
     }
+    
+    // Preserve focus on input field after mode change
+    this.updateComplete.then(() => {
+      const input = this.shadowRoot?.querySelector('.input-field') as HTMLInputElement;
+      if (input) {
+        input.focus();
+        // Ensure input focused state is maintained
+        this.inputFocused = true;
+        this.requestUpdate();
+      }
+    });
   }
 }
 
