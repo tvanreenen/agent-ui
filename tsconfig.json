@@ -7,6 +7,7 @@
       "sourceMap": true,
       "experimentalDecorators": true,
       "emitDecoratorMetadata": true,
+      "allowSyntheticDefaultImports": true,
       "lib": ["es2018", "dom"]
     },
     "include": ["src/**/*"]

@@ -2,6 +2,16 @@
 
 A modern, accessible chat widget component for AI agents built with Lit and TypeScript. Built as a web component with shadow DOM for encapsulation, making it perfect for integrating AI assistants into any web application.
 
+## Features
+
+- **Web Component**: Built with Lit for easy integration
+- **TypeScript**: Full type safety and IntelliSense support
+- **Responsive Design**: Works on desktop and mobile
+- **Keyboard Shortcuts**: Ctrl/Cmd + K to focus, Esc to collapse
+- **Customizable**: Brand colors, agent name, placeholder text
+- **Markdown Support**: Built-in rich text formatting with streaming
+- **Security**: DOMPurify sanitization for XSS protection
+
 ## Quick Start
 
 ```bash
@@ -46,15 +56,19 @@ npm install && npm run build
 const widget = AgentUI.init({
   prompts: string[],           // Array of suggestion queries
   agentName: string,           // Name of your AI agent
-  placeholderText: string      // Input placeholder text
+  placeholderText: string,     // Input placeholder text
+  iconSvg?: string,           // Custom SVG icon (raw SVG string)
+  iconUrl?: string            // Custom SVG icon (URL)
 });
 ```
 
 ### Methods
 
 ```javascript
-widget.addMessage('user', 'Hello');     // Add user message
-widget.addMessage('agent', 'Hi there!'); // Add agent response
+widget.replaceLastMessage('Full message content');  // Replace last agent message
+widget.appendToLastMessage('Streaming content...'); // Append to last agent message
+widget.setTyping(true);                            // Show typing indicator
+widget.setTyping(false);                           // Hide typing indicator
 ```
 
 ### Events
@@ -92,6 +106,32 @@ agent-ui {
   --border-radius: 12px;         /* Corner radius */
 }
 ```
+
+## Security
+
+The component includes comprehensive security features to prevent XSS attacks:
+
+### Input Sanitization
+- **User messages** are sanitized before display using DOMPurify
+- **Agent responses** are sanitized after markdown parsing
+- **Whitelist approach** - only safe HTML tags are allowed
+
+### Allowed HTML Tags
+```javascript
+// Safe elements that are preserved:
+h1, h2, h3, h4, h5, h6          // Headers
+strong, b, em, i, code, pre      // Text formatting
+ul, ol, li                       // Lists
+a                                // Links (with href sanitization)
+blockquote                       // Blockquotes
+br, p                            // Line breaks
+div                              // Code blocks
+```
+
+### Markdown Security
+- Markdown is parsed safely with `marked`
+- HTML output is sanitized with DOMPurify
+- Fallback to plain text if parsing fails
 
 ## Development
 

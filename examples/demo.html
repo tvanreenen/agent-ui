@@ -52,30 +52,44 @@
     document.addEventListener('DOMContentLoaded', async () => {
       const widget = AgentUI.init({
         prompts: [
-          'Explain the dashboard widgets',
-          'Analyze my account health',
-          'Show me what actions you can perform'
+          'Show me a simple text example',
+          'Show me a markdown example',
+          'Show me an XSS example'
         ],
-        agentName: 'Tim',
-        placeholderText: 'Ask Tim to find data, perform actions, or get insights - he can do almost anything'
-        //iconUrl: '../agent-icon.svg' // Load from URL or pass raw SVG text
+        agentName: 'Demo',
+        placeholderText: 'Click a suggestion button to see streaming examples...'
       });
 
-      // Example 1: Listen for full user messages
-      // widget.addEventListener('message', (e) => {
-      //   widget.setTyping(true);
-      //   setTimeout(() => {
-      //     widget.replaceLastMessage(`Thanks for your message! I'll get back to you soon about "${e.detail.query}".`);
-      //     widget.setTyping(false);
-      //   }, 1000);
-      // });
-
-      // Example 2: Listen for streaming user messages
+      // Handle different streaming examples
       widget.addEventListener('message', (e) => {
         widget.setTyping(true);
-        const fullMsg = `Thanks for your message! I'll get back to you soon about "${e.detail.query}".`;
-        const words = fullMsg.split(' ');
+        
+        let content = '';
+        if (e.detail.query.includes('simple text')) {
+          content = 'This is a simple text example that demonstrates basic streaming functionality. The text appears word by word, showing how the component handles plain text content without any special formatting. This is useful for regular conversational responses that don\'t need any markdown or rich formatting.';
+        } else if (e.detail.query.includes('markdown')) {
+          content = '# Markdown Streaming Example\n\nThis demonstrates **rich text formatting** with streaming support!\n\n## Features:\n- ✅ **Bold text** and *italic text*\n- 🔄 Real-time markdown parsing\n- 📝 Code blocks: `console.log("Hello!")`\n- 🎨 Lists and formatting\n\n> This is a blockquote that shows how the component handles different markdown elements while streaming.\n\n```javascript\n// Code blocks work too!\nfunction streamingExample() {\n  return "Markdown + Streaming = Awesome!";\n}\n```\n\n[Learn more about markdown](https://example.com)';
+        } else if (e.detail.query.includes('XSS')) {
+          content = `# XSS Protection Demo
+
+This example shows how the component handles potentially malicious content:
+
+**Input received:** ${e.detail.query}
+
+## Security Features:
+- ✅ Script tags are stripped: <script>alert('XSS')<\/script>
+- ✅ Event handlers removed: <img src="x" onerror="alert('XSS')">
+- ✅ Safe markdown preserved: **bold** and *italic*
+
+The component uses DOMPurify to sanitize all content, ensuring that only safe HTML elements are preserved while malicious code is stripped out.`;
+        } else {
+          // Default response
+          content = 'Thanks for your message! I\'ll get back to you soon about "' + e.detail.query + '". This is a default response that shows basic streaming functionality.';
+        }
+        
+        const words = content.split(' ');
         let i = 0;
+        
         setTimeout(() => {
           widget.setTyping(false);
           const stream = () => {

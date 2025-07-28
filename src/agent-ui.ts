@@ -1,5 +1,7 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, state, property } from 'lit/decorators.js';
+import { marked } from 'marked';
+import DOMPurify from 'dompurify';
 
 @customElement('agent-ui')
 export class AgentUI extends LitElement {
@@ -420,29 +422,17 @@ export class AgentUI extends LitElement {
     });
   }
 
-
-
-  /**
-   * Set typing indicator state
-   * @param typing - Whether the agent is currently typing
-   */
   setTyping(typing: boolean) {
     this.isTyping = typing;
     this.requestUpdate();
   }
 
-
-
-  /**
-   * Replace the last message content (for full message updates)
-   * @param content - The new message content
-   */
   replaceLastMessage(content: string) {
     if (this.messages.length === 0) {
       // If no messages exist, create a new agent message
       this.messages = [{ type: 'agent', text: content }];
       this.requestUpdate();
-      this.updateComplete.then(() => this.scrollToBottom());
+      this.updateComplete.then(() => this._scrollToBottom());
       return;
     }
 
@@ -454,25 +444,21 @@ export class AgentUI extends LitElement {
         { ...lastMessage, text: content }
       ];
       this.requestUpdate();
-      this.updateComplete.then(() => this.scrollToBottom());
+      this.updateComplete.then(() => this._scrollToBottom());
     } else {
       // Create new agent message if last message was from user
       this.messages = [...this.messages, { type: 'agent', text: content }];
       this.requestUpdate();
-      this.updateComplete.then(() => this.scrollToBottom());
+      this.updateComplete.then(() => this._scrollToBottom());
     }
   }
 
-  /**
-   * Append content to the last message (for streaming)
-   * @param content - The content to append
-   */
   appendToLastMessage(content: string) {
     if (this.messages.length === 0) {
       // If no messages exist, create a new agent message
       this.messages = [{ type: 'agent', text: content }];
       this.requestUpdate();
-      this.updateComplete.then(() => this.scrollToBottom());
+      this.updateComplete.then(() => this._scrollToBottom());
       return;
     }
 
@@ -485,29 +471,73 @@ export class AgentUI extends LitElement {
         { ...lastMessage, text: updatedText }
       ];
       this.requestUpdate();
-      this.updateComplete.then(() => this.scrollToBottom());
+      this.updateComplete.then(() => this._scrollToBottom());
     } else {
       // Create new agent message if last message was from user
       this.messages = [...this.messages, { type: 'agent', text: content }];
       this.requestUpdate();
-      this.updateComplete.then(() => this.scrollToBottom());
+      this.updateComplete.then(() => this._scrollToBottom());
     }
   }
 
-  private scrollToBottom() {
+  private _scrollToBottom() {
     const chatBody = this.shadowRoot?.querySelector('.body');
     if (chatBody) {
       chatBody.scrollTop = chatBody.scrollHeight;
     }
   }
 
+  private _parseMarkdown(content: string): string {
+    try {
+      marked.setOptions({
+        breaks: true, // Convert line breaks to <br>
+        gfm: true    // GitHub Flavored Markdown
+      });
+      const result = marked.parse(content);
+      const html = typeof result === 'string' ? result : String(result);
+      return this._sanitizeHTML(html);
+    } catch (error) {
+      console.warn('Markdown parsing failed:', error);
+      return this._sanitizeText(content); // Fallback to plain text
+    }
+  }
+
+  private _sanitizeText(text: string): string {
+    return DOMPurify.sanitize(text, {
+      ALLOWED_TAGS: [],
+      ALLOWED_ATTR: []
+    });
+  }
+
+  private _sanitizeHTML(html: string): string {
+    return DOMPurify.sanitize(html, {
+      ALLOWED_TAGS: [
+        // Headers
+        'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+        // Text formatting
+        'strong', 'b', 'em', 'i', 'code', 'pre',
+        // Lists
+        'ul', 'ol', 'li',
+        // Links
+        'a',
+        // Blockquotes
+        'blockquote',
+        // Line breaks
+        'br', 'p',
+        // Code blocks
+        'div'
+      ],
+      ALLOWED_ATTR: [
+        'href', 'target', 'rel', 'class', 'id'
+      ],
+      ALLOW_DATA_ATTR: false,
+      KEEP_CONTENT: true
+    });
+  }
+
   connectedCallback() {
     super.connectedCallback();
-    
-    // Add global keyboard listeners
     document.addEventListener('keydown', this._handleGlobalKeydown.bind(this));
-    
-    // Load icon if needed
     this._loadIcon();
   }
 
@@ -517,7 +547,6 @@ export class AgentUI extends LitElement {
       this.loadedIconSvg = this.iconSvg;
       return;
     }
-
     // If we have a URL, fetch the SVG content
     if (this.iconUrl) {
       try {
@@ -535,17 +564,11 @@ export class AgentUI extends LitElement {
 
   disconnectedCallback() {
     super.disconnectedCallback();
-    
-    // Remove global keyboard listeners
     document.removeEventListener('keydown', this._handleGlobalKeydown.bind(this));
-    
-    // Clean up body margin if in panel mode
     if (this.panelMode) {
       document.body.style.marginRight = '0';
       document.body.style.transition = '';
-    }
-    
-
+    }    
   }
 
   private _handleGlobalKeydown(e: KeyboardEvent) {
@@ -559,7 +582,6 @@ export class AgentUI extends LitElement {
         this.requestUpdate();
       }
     }
-    
     // Esc to collapse when expanded
     if (e.key === 'Escape' && this.open) {
       e.preventDefault();
@@ -576,7 +598,7 @@ export class AgentUI extends LitElement {
             ${this.messages.map(msg => html`
               <div class="message ${msg.type}-message">
                 <strong class="message-author">${msg.type === 'user' ? 'You' : this.agentName}:</strong> 
-                <span class="message-text">${msg.text}</span>
+                <div class="message-text" .innerHTML=${msg.type === 'user' ? this._sanitizeText(msg.text) : this._parseMarkdown(msg.text)}></div>
               </div>
             `)}
             ${this.isTyping ? html`
@@ -600,11 +622,11 @@ export class AgentUI extends LitElement {
               class="input-field" 
               type="text" 
               placeholder=${this.placeholderText}
-              @keydown=${this._onKeydown}
-              @focus=${this._onInputFocus}
-              @blur=${this._onInputBlur}
+              @keydown=${this._handleKeydown}
+              @focus=${this._handleInputFocus}
+              @blur=${this._handleInputBlur}
             />
-            <button class="send-button" @click=${this._sendMessage}>
+            <button class="send-button" @click=${this._handleSendMessage}>
               <!-- Send icon -->
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-send-horizontal-icon lucide-send-horizontal"><path d="M3.714 3.048a.498.498 0 0 0-.683.627l2.843 7.627a2 2 0 0 1 0 1.396l-2.842 7.627a.498.498 0 0 0 .682.627l18-8.5a.5.5 0 0 0 0-.904z"/><path d="M6 12h16"/></svg>
             </button>
@@ -612,14 +634,14 @@ export class AgentUI extends LitElement {
           ${this.open ? html`
             <div class="suggestions">
               ${this.prompts.map(prompt => html`
-                <button class="suggestion" @click=${() => this._handleSuggestion(prompt)}>
+                <button class="suggestion" @click=${() => this._handleSuggestionClick(prompt)}>
                   "${prompt}"
                 </button>
               `)}
             </div>
           ` : ''}
         </div>
-        <button class="toggle-button" @click=${this._toggle}>
+        <button class="toggle-button" @click=${this._toggleExpanded}>
           ${this.open ? html`
             <!-- lucide: minimize-2 -->
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-minimize2-icon lucide-minimize-2"><path d="m14 10 7-7"/><path d="M20 10h-6V4"/><path d="m3 21 7-7"/><path d="M4 14h6v6"/></svg>
@@ -629,7 +651,7 @@ export class AgentUI extends LitElement {
           `}
         </button>
         ${this.open ? html`
-          <button class="panel-toggle-button" @click=${this._togglePanel} title=${this.panelMode ? 'Switch to dialog mode' : 'Switch to panel mode'}>
+          <button class="panel-toggle-button" @click=${this._handlePanelToggle} title=${this.panelMode ? 'Switch to dialog mode' : 'Switch to panel mode'}>
             ${this.panelMode ? html`
               <!-- lucide: panel-bottom -->
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-panel-bottom-icon lucide-panel-bottom"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 15h18"/></svg>
@@ -643,7 +665,7 @@ export class AgentUI extends LitElement {
     `;
   }
 
-  private _toggle() {
+  private _toggleExpanded() {
     const wasOpen = this.open;
     this.setOpen(!this.open);
     
@@ -661,25 +683,29 @@ export class AgentUI extends LitElement {
     }
   }
 
-  private _handleSuggestion(prompt: string) {
+  private _handleSuggestionClick(prompt: string) {
+    // Sanitize user input before adding to messages
+    const sanitizedPrompt = this._sanitizeText(prompt);
     // Add user message internally
-    this.messages = [...this.messages, { type: 'user', text: prompt }];
+    this.messages = [...this.messages, { type: 'user', text: sanitizedPrompt }];
     this.requestUpdate();
-    this.updateComplete.then(() => this.scrollToBottom());
-    // Dispatch event for external handling
-    this.dispatchEvent(new CustomEvent('message', { detail: { query: prompt } }));
+    this.updateComplete.then(() => this._scrollToBottom());
+    // Dispatch event for external handling (with sanitized content)
+    this.dispatchEvent(new CustomEvent('message', { detail: { query: sanitizedPrompt } }));
   }
 
-  private _sendMessage() {
+  private _handleSendMessage() {
     const input = this.shadowRoot?.querySelector('.input-field') as HTMLInputElement;
     if (input && input.value.trim()) {
       const messageText = input.value;
+      // Sanitize user input before adding to messages
+      const sanitizedMessage = this._sanitizeText(messageText);
       // Add user message internally
-      this.messages = [...this.messages, { type: 'user', text: messageText }];
+      this.messages = [...this.messages, { type: 'user', text: sanitizedMessage }];
       this.requestUpdate();
-      this.updateComplete.then(() => this.scrollToBottom());
-      // Dispatch event for external handling
-      this.dispatchEvent(new CustomEvent('message', { detail: { query: messageText } }));
+      this.updateComplete.then(() => this._scrollToBottom());
+      // Dispatch event for external handling (with sanitized content)
+      this.dispatchEvent(new CustomEvent('message', { detail: { query: sanitizedMessage } }));
       input.value = '';
     }
     // Expand the widget when send is clicked
@@ -697,18 +723,18 @@ export class AgentUI extends LitElement {
     }
   }
 
-  private _onKeydown(e: KeyboardEvent) {
+  private _handleKeydown(e: KeyboardEvent) {
     if (e.key === 'Enter') {
-      this._sendMessage();
+      this._handleSendMessage();
     }
   }
 
-  private _onInputFocus() {
+  private _handleInputFocus() {
     this.inputFocused = true;
     this.requestUpdate();
   }
 
-  private _onInputBlur() {
+  private _handleInputBlur() {
     this.inputFocused = false;
     this.requestUpdate();
   }
@@ -719,7 +745,7 @@ export class AgentUI extends LitElement {
     }
   }
 
-  private _togglePanel() {
+  private _handlePanelToggle() {
     this.panelMode = !this.panelMode;
     this.requestUpdate();
     
@@ -752,7 +778,6 @@ declare global {
   interface Window { AgentUI: any; }
 }
 
-// Expose a simple global API
 window.AgentUI = {
   init: (opts: { prompts: string[], agentName: string, placeholderText: string, iconSvg?: string, iconUrl?: string }) => {
     let el = document.querySelector('agent-ui') as AgentUI;
