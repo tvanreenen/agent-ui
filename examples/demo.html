@@ -49,7 +49,7 @@
 
   <!-- Initialize the widget -->
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', async () => {
       const widget = AgentUI.init({
         prompts: [
           'Explain the dashboard widgets',
@@ -58,15 +58,34 @@
         ],
         agentName: 'Tim',
         placeholderText: 'Ask Tim to find data, perform actions, or get insights - he can do almost anything'
+        //iconUrl: '../agent-icon.svg' // Load from URL or pass raw SVG text
       });
 
-      // Listen for user messages
+      // Example 1: Listen for full user messages
+      // widget.addEventListener('message', (e) => {
+      //   widget.setTyping(true);
+      //   setTimeout(() => {
+      //     widget.replaceLastMessage(`Thanks for your message! I'll get back to you soon about "${e.detail.query}".`);
+      //     widget.setTyping(false);
+      //   }, 1000);
+      // });
+
+      // Example 2: Listen for streaming user messages
       widget.addEventListener('message', (e) => {
-        console.log('User typed:', e.detail.query);
-        
-        // Simulate Kareem's response
+        widget.setTyping(true);
+        const fullMsg = `Thanks for your message! I'll get back to you soon about "${e.detail.query}".`;
+        const words = fullMsg.split(' ');
+        let i = 0;
         setTimeout(() => {
-          widget.addMessage('agent', `Thanks for your message! I'll get back to you soon about "${e.detail.query}".`);
+          widget.setTyping(false);
+          const stream = () => {
+            if (i < words.length) {
+              widget.appendToLastMessage(words[i] + ' ');
+              i++;
+              setTimeout(stream, 25);
+            }
+          };
+          stream();
         }, 1000);
       });
     });

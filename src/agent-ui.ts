@@ -187,6 +187,16 @@ export class AgentUI extends LitElement {
       padding: 8px 16px;
       border: 1px solid #e0e0e0;
     }
+    
+    .input-prefix {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    
+    
+    
     .input-field {
       flex: 1;
       border: none;
@@ -278,6 +288,40 @@ export class AgentUI extends LitElement {
     .agent-message .message-author {
       color: #702c62;
     }
+    
+    .typing-indicator {
+      display: inline-block;
+      animation: typing 1.4s infinite;
+    }
+    
+    .typing-indicator span {
+      display: inline-block;
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: #702c62;
+      margin: 0 2px;
+      animation: typing-dot 1.4s infinite;
+    }
+    
+    .typing-indicator span:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+    
+    .typing-indicator span:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+    
+    @keyframes typing-dot {
+      0%, 60%, 100% {
+        opacity: 0.3;
+        transform: scale(0.8);
+      }
+      30% {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
     .toggle-button {
       position: absolute;
       top: 8px;
@@ -333,13 +377,17 @@ export class AgentUI extends LitElement {
     }
   `;
 
-  @property({ type: Boolean }) private open = false;
-  @property({ type: Boolean }) private panelMode = false;
-  @property({ type: Boolean }) private inputFocused = false;
   @property({ type: Array }) prompts: string[] = [];
   @property({ type: String }) agentName: string = 'Agent';
   @property({ type: String }) placeholderText: string = 'Ask me anything - I can help with data, actions, and insights';
+  @property({ type: String }) iconSvg: string = '';
+  @property({ type: String }) iconUrl: string = '';
   @state() private messages: Array<{type: 'user' | 'agent', text: string}> = [];
+  @state() private open: boolean = false;
+  @state() private panelMode: boolean = false;
+  @state() private inputFocused: boolean = false;
+  @state() private loadedIconSvg: string = '';
+  @state() private isTyping: boolean = false;
 
   setOpen(value: boolean) {
     this.open = value;
@@ -372,13 +420,78 @@ export class AgentUI extends LitElement {
     });
   }
 
-  addMessage(type: 'user' | 'agent', text: string) {
-    this.messages = [...this.messages, { type, text }];
+
+
+  /**
+   * Set typing indicator state
+   * @param typing - Whether the agent is currently typing
+   */
+  setTyping(typing: boolean) {
+    this.isTyping = typing;
     this.requestUpdate();
-    // Auto-scroll after message is added
-    this.updateComplete.then(() => {
-      this.scrollToBottom();
-    });
+  }
+
+
+
+  /**
+   * Replace the last message content (for full message updates)
+   * @param content - The new message content
+   */
+  replaceLastMessage(content: string) {
+    if (this.messages.length === 0) {
+      // If no messages exist, create a new agent message
+      this.messages = [{ type: 'agent', text: content }];
+      this.requestUpdate();
+      this.updateComplete.then(() => this.scrollToBottom());
+      return;
+    }
+
+    const lastMessage = this.messages[this.messages.length - 1];
+    if (lastMessage.type === 'agent') {
+      // Update existing agent message in state
+      this.messages = [
+        ...this.messages.slice(0, -1),
+        { ...lastMessage, text: content }
+      ];
+      this.requestUpdate();
+      this.updateComplete.then(() => this.scrollToBottom());
+    } else {
+      // Create new agent message if last message was from user
+      this.messages = [...this.messages, { type: 'agent', text: content }];
+      this.requestUpdate();
+      this.updateComplete.then(() => this.scrollToBottom());
+    }
+  }
+
+  /**
+   * Append content to the last message (for streaming)
+   * @param content - The content to append
+   */
+  appendToLastMessage(content: string) {
+    if (this.messages.length === 0) {
+      // If no messages exist, create a new agent message
+      this.messages = [{ type: 'agent', text: content }];
+      this.requestUpdate();
+      this.updateComplete.then(() => this.scrollToBottom());
+      return;
+    }
+
+    const lastMessage = this.messages[this.messages.length - 1];
+    if (lastMessage.type === 'agent') {
+      // Update existing agent message in state
+      const updatedText = lastMessage.text + content;
+      this.messages = [
+        ...this.messages.slice(0, -1),
+        { ...lastMessage, text: updatedText }
+      ];
+      this.requestUpdate();
+      this.updateComplete.then(() => this.scrollToBottom());
+    } else {
+      // Create new agent message if last message was from user
+      this.messages = [...this.messages, { type: 'agent', text: content }];
+      this.requestUpdate();
+      this.updateComplete.then(() => this.scrollToBottom());
+    }
   }
 
   private scrollToBottom() {
@@ -393,6 +506,31 @@ export class AgentUI extends LitElement {
     
     // Add global keyboard listeners
     document.addEventListener('keydown', this._handleGlobalKeydown.bind(this));
+    
+    // Load icon if needed
+    this._loadIcon();
+  }
+
+  private async _loadIcon() {
+    // If we have raw SVG content, use it directly
+    if (this.iconSvg) {
+      this.loadedIconSvg = this.iconSvg;
+      return;
+    }
+
+    // If we have a URL, fetch the SVG content
+    if (this.iconUrl) {
+      try {
+        const response = await fetch(this.iconUrl);
+        if (response.ok) {
+          this.loadedIconSvg = await response.text();
+        } else {
+          console.warn(`Failed to load icon from URL: ${this.iconUrl}`);
+        }
+      } catch (error) {
+        console.warn(`Error loading icon from URL: ${this.iconUrl}`, error);
+      }
+    }
   }
 
   disconnectedCallback() {
@@ -406,6 +544,8 @@ export class AgentUI extends LitElement {
       document.body.style.marginRight = '0';
       document.body.style.transition = '';
     }
+    
+
   }
 
   private _handleGlobalKeydown(e: KeyboardEvent) {
@@ -435,13 +575,27 @@ export class AgentUI extends LitElement {
           <div class="body">
             ${this.messages.map(msg => html`
               <div class="message ${msg.type}-message">
-                <strong class="message-author">${msg.type === 'user' ? 'You' : this.agentName}:</strong> ${msg.text}
+                <strong class="message-author">${msg.type === 'user' ? 'You' : this.agentName}:</strong> 
+                <span class="message-text">${msg.text}</span>
               </div>
             `)}
+            ${this.isTyping ? html`
+              <div class="message agent-message">
+                <strong class="message-author">${this.agentName}:</strong> 
+                <span class="typing-indicator">
+                  <span></span><span></span><span></span>
+                </span>
+              </div>
+            ` : ''}
           </div>
         ` : ''}
         <div class="header">
           <div class="input-wrapper">
+            ${this.loadedIconSvg ? html`
+              <div class="input-prefix">
+                <div .innerHTML=${this.loadedIconSvg}></div>
+              </div>
+            ` : ''}
             <input 
               class="input-field" 
               type="text" 
@@ -509,7 +663,9 @@ export class AgentUI extends LitElement {
 
   private _handleSuggestion(prompt: string) {
     // Add user message internally
-    this.addMessage('user', prompt);
+    this.messages = [...this.messages, { type: 'user', text: prompt }];
+    this.requestUpdate();
+    this.updateComplete.then(() => this.scrollToBottom());
     // Dispatch event for external handling
     this.dispatchEvent(new CustomEvent('message', { detail: { query: prompt } }));
   }
@@ -519,7 +675,9 @@ export class AgentUI extends LitElement {
     if (input && input.value.trim()) {
       const messageText = input.value;
       // Add user message internally
-      this.addMessage('user', messageText);
+      this.messages = [...this.messages, { type: 'user', text: messageText }];
+      this.requestUpdate();
+      this.updateComplete.then(() => this.scrollToBottom());
       // Dispatch event for external handling
       this.dispatchEvent(new CustomEvent('message', { detail: { query: messageText } }));
       input.value = '';
@@ -596,7 +754,7 @@ declare global {
 
 // Expose a simple global API
 window.AgentUI = {
-  init: (opts: { prompts: string[], agentName: string, placeholderText: string }) => {
+  init: (opts: { prompts: string[], agentName: string, placeholderText: string, iconSvg?: string, iconUrl?: string }) => {
     let el = document.querySelector('agent-ui') as AgentUI;
     if (!el) {
       el = document.createElement('agent-ui') as AgentUI;
@@ -605,6 +763,12 @@ window.AgentUI = {
     el.prompts = opts.prompts;
     el.agentName = opts.agentName;
     el.placeholderText = opts.placeholderText;
+    if (opts.iconSvg) {
+      el.iconSvg = opts.iconSvg;
+    }
+    if (opts.iconUrl) {
+      el.iconUrl = opts.iconUrl;
+    }
     el.requestUpdate(); // This is necessary for the reactive system to work
     return el;
   }
