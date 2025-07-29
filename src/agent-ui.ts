@@ -71,7 +71,8 @@ export class AgentUI extends LitElement {
       transform: translateX(-50%);
       background: white;
       border-radius: 12px 12px 0 0;
-      grid-template-rows: auto 1fr;
+      display: flex;
+      flex-direction: column;
     }
     .container.panel-mode {
       position: fixed;
@@ -146,16 +147,13 @@ export class AgentUI extends LitElement {
       background: #702c62;
       padding: 16px;
       border-bottom: 1px solid #e0e0e0;
+      flex-shrink: 0;
       transition: background-color 0.3s ease, border-bottom 0.3s ease;
     }
     .container.expanded .header {
       background: white;
       border-bottom: none;
       border-top: 1px solid #e0e0e0;
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
       padding-bottom: 4px;
     }
     .input-wrapper {
@@ -244,8 +242,8 @@ export class AgentUI extends LitElement {
     .body {
       background: #ffffff;
       padding: 16px;
-      padding-bottom: 80px;
       overflow-y: auto;
+      flex: 1;
       min-height: 0;
       opacity: 0;
       transition: opacity 0.8s ease 0.2s;
@@ -254,12 +252,7 @@ export class AgentUI extends LitElement {
       opacity: 1;
     }
     .message {
-      margin: 0;
-      padding: 8px 0;
-    }
-    ::slotted(.message) {
-      margin: 0;
-      padding: 8px 0;
+      margin: 8px 0;
     }
     .user-message .message-author {
       color: #125361;
@@ -361,6 +354,7 @@ export class AgentUI extends LitElement {
     th {
       text-align: left !important;
     }
+    .message:first-child,
     .message-text > h1:first-child,
     .message-text > h2:first-child,
     .message-text > h3:first-child,
@@ -373,6 +367,20 @@ export class AgentUI extends LitElement {
     .message-text > blockquote:first-child,
     .message-text > pre:first-child {
       margin-top: 0;
+    }
+    .message:last-child,
+    .message-text > h1:last-child,
+    .message-text > h2:last-child,
+    .message-text > h3:last-child,
+    .message-text > h4:last-child,
+    .message-text > h5:last-child,
+    .message-text > h6:last-child,
+    .message-text > p:last-child,
+    .message-text > ul:last-child,
+    .message-text > ol:last-child,
+    .message-text > blockquote:last-child,
+    .message-text > pre:last-child {
+      margin-bottom: 0;
     }
   `;
 
