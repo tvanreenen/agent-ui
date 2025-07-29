@@ -467,6 +467,9 @@ Please report this to https://github.com/markedjs/marked.`,e){let s="<p>An error
     th {
       text-align: left !important;
     }
+    ul, ol {
+      padding-left: 20px;
+    }
     .message:first-child,
     .message-text > h1:first-child,
     .message-text > h2:first-child,
