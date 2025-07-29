@@ -13,8 +13,6 @@ export class AgentUI extends LitElement {
       box-sizing: border-box;
       font-size: 14px;
     }
-    
-    /* Backdrop overlay for expanded state */
     .backdrop {
       position: fixed;
       top: 0;
@@ -27,19 +25,15 @@ export class AgentUI extends LitElement {
       transition: opacity 0.3s ease, visibility 0.3s ease;
       z-index: 999;
       pointer-events: none;
-    }
-    
+    }    
     .backdrop.visible {
       opacity: 1;
       visibility: visible;
       pointer-events: auto;
     }
-    
-    /* Panel mode - hide backdrop */
     .backdrop.panel-mode {
       display: none;
     }
-    
     .container {
       position: fixed;
       bottom: 0;
@@ -51,10 +45,8 @@ export class AgentUI extends LitElement {
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
       overflow: hidden;
       font-family: sans-serif;
-      /* Use CSS Grid for smooth height animation */
       display: grid;
       grid-template-rows: auto 0fr;
-      /* Add smooth transitions for expand/collapse */
       transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1), 
                   border-radius 0.8s ease,
                   grid-template-rows 0.8s cubic-bezier(0.4, 0, 0.2, 1),
@@ -63,20 +55,14 @@ export class AgentUI extends LitElement {
                   transform 0.8s cubic-bezier(0.4, 0, 0.2, 1),
                   bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       z-index: 1000;
-      /* Default collapsed state - partially hidden */
       bottom: -68px;
     }
-    
-    /* Hover state - slide into view */
     .container:hover {
       bottom: 0;
     }
-    
-    /* Focused state - slide into view */
     .container.input-focused {
       bottom: 0;
     }
-    
     .container.expanded {
       width: 80vw;
       height: 80vh;
@@ -87,8 +73,6 @@ export class AgentUI extends LitElement {
       border-radius: 12px 12px 0 0;
       grid-template-rows: auto 1fr;
     }
-    
-    /* Panel mode styles */
     .container.panel-mode {
       position: fixed;
       top: 0;
@@ -102,13 +86,9 @@ export class AgentUI extends LitElement {
       box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
       z-index: 1001;
     }
-    
-    /* Add margin to body when in panel mode */
     :host(.panel-mode) {
       margin-right: 400px;
     }
-    
-    /* Responsive breakpoints */
     @media (max-width: 768px) {
       .container {
         width: 95vw;
@@ -137,7 +117,6 @@ export class AgentUI extends LitElement {
         margin-right: 0;
       }
     }
-    
     @media (max-width: 480px) {
       .container {
         width: 100vw;
@@ -167,7 +146,6 @@ export class AgentUI extends LitElement {
       background: #702c62;
       padding: 16px;
       border-bottom: 1px solid #e0e0e0;
-      /* Add transition for header background change */
       transition: background-color 0.3s ease, border-bottom 0.3s ease;
     }
     .container.expanded .header {
@@ -189,16 +167,12 @@ export class AgentUI extends LitElement {
       padding: 8px 16px;
       border: 1px solid #e0e0e0;
     }
-    
     .input-prefix {
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
     }
-    
-    
-    
     .input-field {
       flex: 1;
       border: none;
@@ -233,6 +207,18 @@ export class AgentUI extends LitElement {
       transform: translateY(0);
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
+    .send-button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      background: #f0f0f0;
+      color: #999;
+    }
+    .send-button:disabled:hover {
+      background: #f0f0f0;
+      color: #999;
+      transform: none;
+      box-shadow: none;
+    }
     .suggestions {
       padding: 4px 0 0 13px;
       display: flex;
@@ -260,42 +246,31 @@ export class AgentUI extends LitElement {
       padding: 16px;
       padding-bottom: 80px;
       overflow-y: auto;
-      /* Grid item will animate height automatically */
       min-height: 0;
       opacity: 0;
-      /* Smooth transitions */
       transition: opacity 0.8s ease 0.2s;
     }
     .container.expanded .body {
       opacity: 1;
     }
-    
-    /* Message spacing */
     .message {
       margin: 0;
       padding: 8px 0;
     }
-    
-    /* Style slotted message elements */
     ::slotted(.message) {
       margin: 0;
       padding: 8px 0;
     }
-    
-    /* Internal message styling */
     .user-message .message-author {
       color: #125361;
     }
-    
     .agent-message .message-author {
       color: #702c62;
     }
-    
     .typing-indicator {
       display: inline-block;
       animation: typing 1.4s infinite;
-    }
-    
+    }    
     .typing-indicator span {
       display: inline-block;
       width: 4px;
@@ -304,16 +279,13 @@ export class AgentUI extends LitElement {
       background: #702c62;
       margin: 0 2px;
       animation: typing-dot 1.4s infinite;
-    }
-    
+    }    
     .typing-indicator span:nth-child(2) {
       animation-delay: 0.2s;
-    }
-    
+    }    
     .typing-indicator span:nth-child(3) {
       animation-delay: 0.4s;
-    }
-    
+    }    
     @keyframes typing-dot {
       0%, 60%, 100% {
         opacity: 0.3;
@@ -340,7 +312,6 @@ export class AgentUI extends LitElement {
       justify-content: center;
       font-size: 14px;
       font-weight: bold;
-      /* Add transition for button hover and transform */
       transition: all 0.2s ease;
     }
     .toggle-button:hover {
@@ -350,7 +321,6 @@ export class AgentUI extends LitElement {
     .toggle-button:active {
       transform: scale(0.95);
     }
-    
     .panel-toggle-button {
       position: absolute;
       top: 8px;
@@ -367,7 +337,6 @@ export class AgentUI extends LitElement {
       justify-content: center;
       font-size: 14px;
       font-weight: bold;
-      /* Add transition for button hover and transform */
       transition: all 0.2s ease;
     }
     .panel-toggle-button:hover {
@@ -376,6 +345,34 @@ export class AgentUI extends LitElement {
     }
     .panel-toggle-button:active {
       transform: scale(0.95);
+    }
+    table {
+      border-collapse: collapse;
+    }
+    th, td {
+      border: 1px solid #e0e0e0;
+      padding: 4px 6px;
+      text-align: left;
+    }
+    th {
+      background-color: #f8f9fa;
+      font-weight: 600;
+    }
+    th {
+      text-align: left !important;
+    }
+    .message-text > h1:first-child,
+    .message-text > h2:first-child,
+    .message-text > h3:first-child,
+    .message-text > h4:first-child,
+    .message-text > h5:first-child,
+    .message-text > h6:first-child,
+    .message-text > p:first-child,
+    .message-text > ul:first-child,
+    .message-text > ol:first-child,
+    .message-text > blockquote:first-child,
+    .message-text > pre:first-child {
+      margin-top: 0;
     }
   `;
 
@@ -390,6 +387,7 @@ export class AgentUI extends LitElement {
   @state() private inputFocused: boolean = false;
   @state() private loadedIconSvg: string = '';
   @state() private isTyping: boolean = false;
+  @state() private isSubmittable: boolean = true;
   @state() private currentMode: 'collapsed' | 'min' | 'max' = 'collapsed';
 
   setOpen(value: boolean) {
@@ -425,6 +423,11 @@ export class AgentUI extends LitElement {
 
   setTyping(typing: boolean) {
     this.isTyping = typing;
+    this.requestUpdate();
+  }
+
+  setSubmittable(submittable: boolean) {
+    this.isSubmittable = submittable;
     this.requestUpdate();
   }
 
@@ -516,7 +519,7 @@ export class AgentUI extends LitElement {
         // Headers
         'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
         // Text formatting
-        'strong', 'b', 'em', 'i', 'code', 'pre',
+        'strong', 'b', 'em', 'i',
         // Lists
         'ul', 'ol', 'li',
         // Links
@@ -526,7 +529,7 @@ export class AgentUI extends LitElement {
         // Line breaks
         'br', 'p',
         // Code blocks
-        'div',
+        'code', 'pre',
         // Tables
         'table', 'thead', 'tbody', 'tr', 'th', 'td'
       ],
@@ -542,9 +545,7 @@ export class AgentUI extends LitElement {
     super.connectedCallback();
     document.addEventListener('keydown', this._handleGlobalKeydown.bind(this));
   }
-
-
-
+  
   async loadIcon() {
     // If we have raw SVG content, use it directly
     if (this.iconSvg) {
@@ -654,7 +655,7 @@ export class AgentUI extends LitElement {
               @focus=${this._handleInputFocus}
               @blur=${this._handleInputBlur}
             />
-            <button class="send-button" @click=${this._handleSendMessage}>
+            <button class="send-button" ?disabled=${!this.isSubmittable} @click=${this._handleSendMessage}>
               <!-- Send icon -->
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-send-horizontal-icon lucide-send-horizontal"><path d="M3.714 3.048a.498.498 0 0 0-.683.627l2.843 7.627a2 2 0 0 1 0 1.396l-2.842 7.627a.498.498 0 0 0 .682.627l18-8.5a.5.5 0 0 0 0-.904z"/><path d="M6 12h16"/></svg>
             </button>
@@ -723,6 +724,10 @@ export class AgentUI extends LitElement {
   }
 
   private _handleSendMessage() {
+    if (!this.isSubmittable) {
+      return; // Prevent submission when not submittable
+    }
+    
     const input = this.shadowRoot?.querySelector('.input-field') as HTMLInputElement;
     if (input && input.value.trim()) {
       const messageText = input.value;
@@ -752,7 +757,7 @@ export class AgentUI extends LitElement {
   }
 
   private _handleKeydown(e: KeyboardEvent) {
-    if (e.key === 'Enter') {
+    if (e.key === 'Enter' && this.isSubmittable) {
       this._handleSendMessage();
     }
   }

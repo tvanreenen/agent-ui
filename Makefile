@@ -6,4 +6,4 @@ start:
 
 # Build and copy the UMD bundle to examples directory
 build:
-	npm run build && cp dist/agent-ui.umd.js examples/
+	npm run build && cp dist/agent-ui.umd.js dist/agent-ui.umd.js.map examples/
