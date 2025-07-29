@@ -390,6 +390,7 @@ export class AgentUI extends LitElement {
   @state() private inputFocused: boolean = false;
   @state() private loadedIconSvg: string = '';
   @state() private isTyping: boolean = false;
+  @state() private currentMode: 'collapsed' | 'min' | 'max' = 'collapsed';
 
   setOpen(value: boolean) {
     this.open = value;
@@ -576,20 +577,43 @@ export class AgentUI extends LitElement {
   }
 
   private _handleGlobalKeydown(e: KeyboardEvent) {
-    // Ctrl/Cmd + K to focus input (input is always present now)
+    // Ctrl/Cmd + K to cycle through states: collapsed -> min -> max
     if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
       e.preventDefault();
       const input = this.shadowRoot?.querySelector('.input-field') as HTMLInputElement;
       if (input) {
         input.focus();
         this.inputFocused = true;
-        this.requestUpdate();
+        
+        // Cycle through states: collapsed -> min -> max
+        if (this.currentMode === 'collapsed') {
+          // Collapsed -> Min
+          this.currentMode = 'min';
+          this.inputFocused = true;
+          this.requestUpdate();
+        } else if (this.currentMode === 'min') {
+          // Min -> Max
+          this.currentMode = 'max';
+          this.setOpen(true);
+        }
+        // Max stays at max (ESC handles going back)
       }
     }
-    // Esc to collapse when expanded
-    if (e.key === 'Escape' && this.open) {
+    // Esc to reverse cycle: max -> min -> collapsed
+    if (e.key === 'Escape') {
       e.preventDefault();
-      this.setOpen(false);
+      if (this.currentMode === 'max') {
+        // Max -> Min
+        this.currentMode = 'min';
+        this.setOpen(false);
+        this.inputFocused = true; // Keep focused in min state
+      } else if (this.currentMode === 'min') {
+        // Min -> Collapsed
+        this.currentMode = 'collapsed';
+        this.inputFocused = false;
+        this.requestUpdate();
+      }
+      // If collapsed, ESC does nothing
     }
   }
 
