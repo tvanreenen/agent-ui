@@ -525,7 +525,9 @@ export class AgentUI extends LitElement {
         // Line breaks
         'br', 'p',
         // Code blocks
-        'div'
+        'div',
+        // Tables
+        'table', 'thead', 'tbody', 'tr', 'th', 'td'
       ],
       ALLOWED_ATTR: [
         'href', 'target', 'rel', 'class', 'id'
@@ -538,10 +540,11 @@ export class AgentUI extends LitElement {
   connectedCallback() {
     super.connectedCallback();
     document.addEventListener('keydown', this._handleGlobalKeydown.bind(this));
-    this._loadIcon();
   }
 
-  private async _loadIcon() {
+
+
+  async loadIcon() {
     // If we have raw SVG content, use it directly
     if (this.iconSvg) {
       this.loadedIconSvg = this.iconSvg;
@@ -553,6 +556,7 @@ export class AgentUI extends LitElement {
         const response = await fetch(this.iconUrl);
         if (response.ok) {
           this.loadedIconSvg = await response.text();
+          this.requestUpdate(); // Force re-render after async load
         } else {
           console.warn(`Failed to load icon from URL: ${this.iconUrl}`);
         }
@@ -795,6 +799,7 @@ window.AgentUI = {
       el.iconUrl = opts.iconUrl;
     }
     el.requestUpdate(); // This is necessary for the reactive system to work
+    el.loadIcon(); // Load icon after properties are set
     return el;
   }
 };
