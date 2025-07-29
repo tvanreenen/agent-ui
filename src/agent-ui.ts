@@ -76,13 +76,13 @@ export class AgentUI extends LitElement {
     }
     .container.panel-mode {
       position: fixed;
-      top: 0;
+      top: var(--agent-ui-header-height, 0px);
       right: 0;
       bottom: 0 !important;
       left: auto;
       transform: none;
       width: 400px;
-      height: 100vh;
+      height: calc(100vh - var(--agent-ui-header-height, 0px));
       border-radius: 0;
       box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
       z-index: 1001;
@@ -389,6 +389,7 @@ export class AgentUI extends LitElement {
   @property({ type: String }) placeholderText: string = 'Ask me anything - I can help with data, actions, and insights';
   @property({ type: String }) iconSvg: string = '';
   @property({ type: String }) iconUrl: string = '';
+  @property({ type: Number }) headerHeight: number = 0; // Height of fixed header to respect
   @state() private messages: Array<{type: 'user' | 'agent', text: string}> = [];
   @state() private open: boolean = false;
   @state() private panelMode: boolean = false;
@@ -582,6 +583,7 @@ export class AgentUI extends LitElement {
     if (this.panelMode) {
       document.body.style.marginRight = '0';
       document.body.style.transition = '';
+      document.documentElement.style.removeProperty('--agent-ui-header-height');
     }    
   }
 
@@ -794,12 +796,14 @@ export class AgentUI extends LitElement {
     if (this.panelMode) {
       document.body.style.marginRight = '400px';
       document.body.style.transition = 'margin-right 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
+      document.documentElement.style.setProperty('--agent-ui-header-height', `${this.headerHeight}px`);
     } else {
       document.body.style.marginRight = '0';
       // Remove transition after animation completes
       setTimeout(() => {
         document.body.style.transition = '';
       }, 800);
+      document.documentElement.style.removeProperty('--agent-ui-header-height');
     }
     
     // Preserve focus on input field after mode change
@@ -820,7 +824,7 @@ declare global {
 }
 
 window.AgentUI = {
-  init: (opts: { prompts: string[], agentName: string, placeholderText: string, iconSvg?: string, iconUrl?: string }) => {
+  init: (opts: { prompts: string[], agentName: string, placeholderText: string, iconSvg?: string, iconUrl?: string, headerHeight?: number }) => {
     let el = document.querySelector('agent-ui') as AgentUI;
     if (!el) {
       el = document.createElement('agent-ui') as AgentUI;
@@ -834,6 +838,9 @@ window.AgentUI = {
     }
     if (opts.iconUrl) {
       el.iconUrl = opts.iconUrl;
+    }
+    if (opts.headerHeight !== undefined) {
+      el.headerHeight = opts.headerHeight;
     }
     el.requestUpdate(); // This is necessary for the reactive system to work
     el.loadIcon(); // Load icon after properties are set
