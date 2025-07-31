@@ -59,8 +59,8 @@ export class AgentUI2 extends LitElement {
       width: 80vw;
       height: calc(80vh - var(--agent-ui-header-height, 0px));
       left: 50%;
-      top: calc(50% + var(--agent-ui-header-height, 0px) / 2);
-      transform: translate(-50%, -50%);
+      top: calc(var(--agent-ui-header-height, 0px) + (20vh - var(--agent-ui-header-height, 0px)) / 2);
+      transform: translate(-50%, 0);
       border-radius: 12px;
       display: flex;
       flex-direction: column;
@@ -114,7 +114,7 @@ export class AgentUI2 extends LitElement {
     @media (max-width: 768px) {
       .container.expanded {
         width: 80vw;
-        height: 80vh;
+        height: calc(80vh - var(--agent-ui-header-height, 0px));
         bottom: 0 !important;
         left: 50%;
         transform: translateX(-50%);
@@ -136,7 +136,7 @@ export class AgentUI2 extends LitElement {
     @media (max-width: 480px) {
       .container.expanded {
         width: 80vw;
-        height: 80vh;
+        height: calc(80vh - var(--agent-ui-header-height, 0px));
         bottom: 0 !important;
         left: 50%;
         transform: translateX(-50%);
