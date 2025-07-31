@@ -473,7 +473,6 @@ export class AgentUI2 extends LitElement {
     
     if (value) {
       this.inputFocused = false;
-      document.documentElement.style.setProperty(CSS_VARIABLES.HEADER_HEIGHT, `${this.headerHeight}px`);
     }
     
     this.updateComplete.then(() => {
@@ -638,7 +637,6 @@ export class AgentUI2 extends LitElement {
     this.panelMode = this.lastExpandedMode === 'panel';
     this.requestUpdate();
     
-    document.documentElement.style.setProperty(CSS_VARIABLES.HEADER_HEIGHT, `${this.headerHeight}px`);
     if (this.panelMode) {
       document.body.style.marginRight = PANEL_MARGIN_RIGHT;
       document.body.style.transition = PANEL_TRANSITION_DURATION;

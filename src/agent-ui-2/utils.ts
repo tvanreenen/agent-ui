@@ -82,5 +82,5 @@ export function removePanelModeStyles(): void {
   setTimeout(() => {
     document.body.style.transition = '';
   }, 400);
-  document.documentElement.style.removeProperty('--agent-ui-header-height');
+  // Keep the header height CSS variable for dialog mode
 } 
