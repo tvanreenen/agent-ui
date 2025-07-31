@@ -59,7 +59,7 @@ export class AgentUI2 extends LitElement {
       width: 80vw;
       height: calc(80vh - var(--agent-ui-header-height, 0px));
       left: 50%;
-      top: calc(var(--agent-ui-header-height, 0px) + (20vh - var(--agent-ui-header-height, 0px)) / 2);
+      top: calc(var(--agent-ui-header-height, 0px) + (20vh) / 2);
       transform: translate(-50%, 0);
       border-radius: 12px;
       display: flex;
@@ -473,6 +473,7 @@ export class AgentUI2 extends LitElement {
     
     if (value) {
       this.inputFocused = false;
+      document.documentElement.style.setProperty(CSS_VARIABLES.HEADER_HEIGHT, `${this.headerHeight}px`);
     }
     
     this.updateComplete.then(() => {
@@ -566,6 +567,7 @@ export class AgentUI2 extends LitElement {
     super.connectedCallback();
     document.addEventListener('keydown', this._handleGlobalKeydown.bind(this));
     this._loadIcon();
+    document.documentElement.style.setProperty(CSS_VARIABLES.HEADER_HEIGHT, `${this.headerHeight}px`);
   }
   
   private async _loadIcon(): Promise<void> {
@@ -585,7 +587,8 @@ export class AgentUI2 extends LitElement {
     document.removeEventListener('keydown', this._handleGlobalKeydown.bind(this));
     if (this.panelMode) {
       removePanelModeStyles();
-    }    
+    }
+    document.documentElement.style.removeProperty(CSS_VARIABLES.HEADER_HEIGHT);
   }
 
   // Event handlers
@@ -635,10 +638,10 @@ export class AgentUI2 extends LitElement {
     this.panelMode = this.lastExpandedMode === 'panel';
     this.requestUpdate();
     
+    document.documentElement.style.setProperty(CSS_VARIABLES.HEADER_HEIGHT, `${this.headerHeight}px`);
     if (this.panelMode) {
       document.body.style.marginRight = PANEL_MARGIN_RIGHT;
       document.body.style.transition = PANEL_TRANSITION_DURATION;
-      document.documentElement.style.setProperty(CSS_VARIABLES.HEADER_HEIGHT, `${this.headerHeight}px`);
     }
     
     this.updateComplete.then(() => {
