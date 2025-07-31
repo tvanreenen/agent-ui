@@ -57,9 +57,9 @@ export class AgentUI2 extends LitElement {
     
     .container.expanded {
       width: 80vw;
-      height: 80vh;
+      height: calc(80vh - var(--agent-ui-header-height, 0px));
       left: 50%;
-      top: 50%;
+      top: calc(50% + var(--agent-ui-header-height, 0px) / 2);
       transform: translate(-50%, -50%);
       border-radius: 12px;
       display: flex;
@@ -445,11 +445,10 @@ export class AgentUI2 extends LitElement {
     }
   `;
 
-  @property({ type: String }) agentName: string = 'Agent';
   @property({ type: String }) placeholderText: string = 'Ask me anything - I can help with data, actions, and insights';
   @property({ type: String }) iconSvg: string = '';
   @property({ type: String, attribute: 'icon-url' }) iconUrl: string = '';
-  @property({ type: Number }) headerHeight: number = 0;
+  @property({ type: Number, attribute: 'header-height' }) headerHeight: number = 0;
   @property({ type: String }) conversationTitle: string = 'New Conversation';
   
   @state() private messages: Message[] = [];
