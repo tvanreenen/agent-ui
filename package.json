@@ -1,6 +1,8 @@
 {
   "scripts": {
-    "build": "esbuild src/agent-ui.ts --bundle --outfile=dist/agent-ui.umd.js --format=iife --target=es2020 --sourcemap --minify",
+    "build": "npm run build:ui1 && npm run build:ui2",
+    "build:ui1": "esbuild src/agent-ui.ts --bundle --outfile=dist/agent-ui.umd.js --format=iife --target=es2020 --sourcemap --minify && cp dist/agent-ui.umd.js examples/ && cp dist/agent-ui.umd.js.map examples/",
+    "build:ui2": "esbuild src/agent-ui-2/index.ts --bundle --outfile=dist/agent-ui-2.umd.js --format=iife --target=es2020 --sourcemap --minify && cp dist/agent-ui-2.umd.js examples/ && cp dist/agent-ui-2.umd.js.map examples/",
     "start": "npx serve examples -p 3000"
   },
   "dependencies": {
