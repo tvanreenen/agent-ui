@@ -445,8 +445,8 @@ export class AgentUI2 extends LitElement {
     }
   `;
 
-  @property({ type: String }) placeholderText: string = 'Ask me anything - I can help with data, actions, and insights';
-  @property({ type: String }) iconSvg: string = '';
+  @property({ type: String, attribute: 'placeholder-text' }) placeholderText: string = '';
+  @property({ type: String, attribute: 'icon-svg' }) iconSvg: string = '';
   @property({ type: String, attribute: 'icon-url' }) iconUrl: string = '';
   @property({ type: Number, attribute: 'header-height' }) headerHeight: number = 0;
   @property({ type: String }) conversationTitle: string = 'New Conversation';
