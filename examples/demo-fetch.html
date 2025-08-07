@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent UI 2 - Fetch Protocol Demo</title>
+    <link rel="stylesheet" href="demo.css">
+    <script src="demo.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="demo-section">
+            <h2>Fetch Protocol Implementation</h2>
+            <p>Traditional fetch-based communication:</p>
+            <div class="code-block">
+// Listen for user messages
+widget.addEventListener('message', (e) => {
+    console.log('User asked:', e.detail.query);
+    
+    // Show typing indicator
+    widget.setTyping(true);
+    widget.setSubmittable(false);
+    
+    // Make API call
+    fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: e.detail.query })
+    })
+    .then(response => response.json())
+    .then(data => {
+        widget.setTyping(false);
+        widget.setSubmittable(true);
+        widget.appendToLastMessage(data.response);
+    })
+    .catch(error => {
+        widget.setTyping(false);
+        widget.setSubmittable(true);
+        widget.appendToLastMessage('Error: ' + error.message);
+    });
+});
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2>Event Log</h2>
+            <div id="eventLog" class="log"></div>
+        </div>
+    </div>
+
+    <agent-ui-2 placeholder-text="Ask me anything..."></agent-ui-2>
+    <script src="agent-ui-2.umd.js"></script>
+    
+    <script>
+        const widget = document.querySelector('agent-ui-2')
+        widget.conversationTitle = 'Fetch Demo';
+        widget.addEventListener('message', (e) => {
+            logEvent(`User asked: "${e.detail.query}"`, 'info');
+            widget.setTyping(true);
+            widget.setSubmittable(false);
+            setTimeout(() => {
+                widget.setTyping(false);
+                widget.appendToLastMessage(getRandomResponse());
+                widget.setSubmittable(true);
+            }, 2000);
+        });
+        logEvent('Widget initialized', 'info');
+    </script>
+</body>
+</html> 
