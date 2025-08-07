@@ -6,7 +6,7 @@ export interface Message {
 export type DisplayMode = 'min' | 'max';
 export type ExpandedMode = 'dialog' | 'panel';
 
-export interface AgentUI2Properties {
+export interface AgentUIProperties {
   prompts: string[];
   agentName: string;
   placeholderText: string;

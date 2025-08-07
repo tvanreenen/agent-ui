@@ -49,10 +49,10 @@ widget.addEventListener('message', (e) => {
         </div>
     </div>
 
-    <agent-ui-2 placeholder-text="Ask me anything..."></agent-ui-2>
+    <agent-ui placeholder-text="Ask me anything..."></agent-ui>
 
     <script>
-        const widget = document.querySelector('agent-ui-2')
+        const widget = document.querySelector('agent-ui')
         widget.conversationTitle = 'Fetch Demo';
         widget.addEventListener('message', (e) => {
             logEvent(`User asked: "${e.detail.query}"`, 'info');

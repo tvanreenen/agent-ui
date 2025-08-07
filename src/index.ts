@@ -4,8 +4,8 @@ import { Message, DisplayMode, ExpandedMode } from './types.js';
 import { parseMarkdown, sanitizeText, loadIconFromUrl, copyToClipboard, applyPanelModeStyles, removePanelModeStyles } from './utils.js';
 import { PANEL_WIDTH, PANEL_MARGIN_RIGHT, TRANSITION_DURATION, PANEL_TRANSITION_DURATION, CSS_VARIABLES, KEYBOARD_SHORTCUTS, CSS_CLASSES } from './constants.js';
 
-@customElement('agent-ui-2')
-export class AgentUI2 extends LitElement {
+@customElement('agent-ui')
+export class AgentUI extends LitElement {
   static styles = css`
     :host { 
       display: block;
@@ -812,6 +812,6 @@ export class AgentUI2 extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    'agent-ui-2': AgentUI2;
+    'agent-ui': AgentUI;
   }
 }

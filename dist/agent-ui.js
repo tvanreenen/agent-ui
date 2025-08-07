@@ -547,7 +547,7 @@ Please report this to https://github.com/markedjs/marked.`,e){let s="<p>An error
     .message-text > pre:last-child {
       margin-bottom: 0;
     }
-  `),N([re({type:String,attribute:"placeholder-text"})],v.prototype,"placeholderText",2),N([re({type:String,attribute:"icon-svg"})],v.prototype,"iconSvg",2),N([re({type:String,attribute:"icon-url"})],v.prototype,"iconUrl",2),N([re({type:Number,attribute:"header-height"})],v.prototype,"headerHeight",2),N([re({type:String})],v.prototype,"conversationTitle",2),N([Y()],v.prototype,"messages",2),N([Y()],v.prototype,"open",2),N([Y()],v.prototype,"panelMode",2),N([Y()],v.prototype,"inputFocused",2),N([Y()],v.prototype,"loadedIconSvg",2),N([Y()],v.prototype,"isTyping",2),N([Y()],v.prototype,"isSubmittable",2),N([Y()],v.prototype,"currentMode",2),N([Y()],v.prototype,"lastExpandedMode",2),v=N([is("agent-ui-2")],v);})();
+  `),N([re({type:String,attribute:"placeholder-text"})],v.prototype,"placeholderText",2),N([re({type:String,attribute:"icon-svg"})],v.prototype,"iconSvg",2),N([re({type:String,attribute:"icon-url"})],v.prototype,"iconUrl",2),N([re({type:Number,attribute:"header-height"})],v.prototype,"headerHeight",2),N([re({type:String})],v.prototype,"conversationTitle",2),N([Y()],v.prototype,"messages",2),N([Y()],v.prototype,"open",2),N([Y()],v.prototype,"panelMode",2),N([Y()],v.prototype,"inputFocused",2),N([Y()],v.prototype,"loadedIconSvg",2),N([Y()],v.prototype,"isTyping",2),N([Y()],v.prototype,"isSubmittable",2),N([Y()],v.prototype,"currentMode",2),N([Y()],v.prototype,"lastExpandedMode",2),v=N([is("agent-ui")],v);})();
 /*! Bundled license information:
 
 @lit/reactive-element/css-tag.js:

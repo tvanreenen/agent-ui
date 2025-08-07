@@ -29,7 +29,6 @@ Clone the repository, checkout the desired version tag, and use the pre-built `d
 ### Option 3 - DIY
 
 Build your own compiled and minified version of the file by cloning the repository, navitigating to the prject, and running `npm run build`.
-```
 
 ## Using Agent UI in your App/Page
 
@@ -40,9 +39,9 @@ Build your own compiled and minified version of the file by cloning the reposito
   <script src="agent-ui.js"></script>
 </head>
 <body>
-  <agent-ui-2></agent-ui-2>
+  <agent-ui></agent-ui>
   <script>
-    const widget = document.querySelector('agent-ui-2');
+    const widget = document.querySelector('agent-ui');
     widget.addEventListener('message', (event) => {
       widget.appendToLastMessage(`I see that you asked: "${e.detail.query}"`)
     });
