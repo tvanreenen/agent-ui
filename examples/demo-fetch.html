@@ -3,14 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agent UI 2 - Fetch Protocol Demo</title>
+    <title>Agent UI - Fetch Demo</title>
     <link rel="stylesheet" href="demo.css">
     <script src="demo.js"></script>
+    <script src="agent-ui.js"></script>
 </head>
 <body>
     <div class="container">
         <div class="demo-section">
-            <h2>Fetch Protocol Implementation</h2>
+            <h2>Fetch Implementation</h2>
             <p>Traditional fetch-based communication:</p>
             <div class="code-block">
 // Listen for user messages
@@ -49,8 +50,7 @@ widget.addEventListener('message', (e) => {
     </div>
 
     <agent-ui-2 placeholder-text="Ask me anything..."></agent-ui-2>
-    <script src="agent-ui-2.umd.js"></script>
-    
+
     <script>
         const widget = document.querySelector('agent-ui-2')
         widget.conversationTitle = 'Fetch Demo';

@@ -4,9 +4,10 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Agent UI 2 Demo</title>
+    <title>Agent UI Demo</title>
     <link rel="stylesheet" href="demo.css">
-    <script src="agent-ui-2.umd.js"></script>
+    <script src="demo.js"></script>
+    <script src="agent-ui.js"></script>
 </head>
 <body>
     <h1>Agent UI 2 Demo</h1>
@@ -22,18 +23,19 @@
     <p>Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Itaque earum rerum hic tenetur a sapiente delectus, ut aut reiciendis voluptatibus maiores alias consequatur aut perferendis doloribus asperiores repellat.</p>
     
     <agent-ui-2 placeholder-text="Ask me anything..."></agent-ui-2>
+
     <script>
-        const agentUI = document.querySelector('agent-ui-2');
-        agentUI.addEventListener('message', (event) => {
-            agentUI.setTyping(true);
-            agentUI.setSubmittable(false);
+        const widget = document.querySelector('agent-ui-2');
+        widget.addEventListener('message', (event) => {
+            widget.setTyping(true);
+            widget.setSubmittable(false);
             // simulate streaming response
             setTimeout(() => {
                 const words = getRandomResponse().split(' ');
                 let i = 0;
                 setTimeout(() => {
                     // simulated point of receiving first chunk
-                    agentUI.setTyping(false);
+                    widget.setTyping(false);
                     // simuilated stream of chunks
                     const stream = () => {
                         if (i < words.length) {
@@ -47,7 +49,7 @@
                     stream();
                 }, 1000);
                 // simulated stream complete
-                agentUI.setSubmittable(true);
+                widget.setSubmittable(true);
             }, 1000);
         });
     </script>

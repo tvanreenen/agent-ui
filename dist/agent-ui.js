@@ -351,7 +351,6 @@ Please report this to https://github.com/markedjs/marked.`,e){let s="<p>An error
     
     .user-message {
       background: var(--agent-ui-brand-color-light);
-      /* linear-gradient(10deg, rgba(112, 44, 98, 0.2) 0%, rgb(255, 255, 255) 70%) */
       display: block;
       width: fit-content;
     }
@@ -593,4 +592,4 @@ lit-html/is-server.js:
 dompurify/dist/purify.es.mjs:
   (*! @license DOMPurify 3.2.6 | (c) Cure53 and other contributors | Released under the Apache license 2.0 and Mozilla Public License 2.0 | github.com/cure53/DOMPurify/blob/3.2.6/LICENSE *)
 */
-//# sourceMappingURL=agent-ui-2.umd.js.map
+//# sourceMappingURL=agent-ui.js.map
