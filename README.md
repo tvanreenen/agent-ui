@@ -7,9 +7,9 @@ A modern, responsive, accessible chat widget that can unobtrusively be added to 
 As agents become a deeper, more prominent part of applications—and increasingly the primary interface—Agent UI offers an opinionated, transitional design that makes chat and commands an accessible, ever‑present capability without getting in your way. It’s always available via the bottom command line, and when you engage it, it adapts to the appropriate modality and space: focused dialog or non-overlaying side panel.
 
 From a technical, communication perspective, the widget is also designed to not be tied to a single wire format — it can render updates from plain text streams, NDJSON events, or full AG-UI/SSE sessions.
-	- Use plain text when you just want to stream generated text directly into the UI.
-	- Use [NDJSON](https://github.com/ndjson/ndjson-spec) for lightweight structured events like tokens, errors, and simple tool outputs.
-	- Use [AG-UI/SSE](https://github.com/ag-ui-protocol/ag-ui) when you want the richest experience, with tool calls, state snapshots/deltas, and multi-channel agent interactions.
+- Use plain text when you just want to stream generated text directly into the UI.
+- Use [NDJSON](https://github.com/ndjson/ndjson-spec) for lightweight structured events like tokens, errors, and simple tool outputs.
+- Use [AG-UI/SSE](https://github.com/ag-ui-protocol/ag-ui) when you want the richest experience, with tool calls, state snapshots/deltas, and multi-channel agent interactions.
 
 No matter which approach your backend supports, you can hook into the stream, parse it appropriately, and keep the UI in sync in real-time.
 
