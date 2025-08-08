@@ -11,127 +11,11 @@
 <body>
     <div class="container">
         <div class="demo-section">
-            <h2>AG-UI Implementation</h2>
-            <p>AG-UI protocol communication with full event handling:</p>
-            <div class="code-block">
-// First, install AG-UI SDK: npm install @ag-ui/client
-import { HttpAgent } from '@ag-ui/client';
-
-// Listen for messages
-widget.addEventListener('message', (e) => {
-    console.log('AG-UI message:', e.detail.query);
-    
-    // Initialize AG-UI agent
-    const agent = new HttpAgent({
-        url: 'https://your-ag-ui-server.com/agent',
-        headers: { 'Authorization': 'Bearer your-api-key' }
-    });
-    
-    // Handle all AG-UI events
-    agent.runAgent({
-        runId: `run_${Date.now()}`,
-        messages: [{ role: 'user', content: e.detail.query }]
-    }).subscribe({
-        next: (event) => {
-            switch (event.type) {
-                case 'RUN_STARTED':
-                    widget.setTyping(true);
-                    widget.setSubmittable(false);
-                    break;
-                    
-                case 'TEXT_MESSAGE_START':
-                    widget.appendToLastMessage('');
-                    break;
-                    
-                case 'TEXT_MESSAGE_CONTENT':
-                    widget.appendToLastMessage(event.delta);
-                    break;
-                    
-                case 'TEXT_MESSAGE_END':
-                    // Message completed - no action needed
-                    break;
-                    
-                case 'TOOL_CALL_START':
-                    widget.appendToLastMessage(`🔧 Calling tool: ${event.toolCallName}`);
-                    break;
-                    
-                case 'TOOL_CALL_ARGS':
-                    // Tool arguments being streamed - could show in UI
-                    break;
-                    
-                case 'TOOL_CALL_END':
-                    // Tool call completed - no action needed
-                    break;
-                    
-                case 'TOOL_CALL_RESULT':
-                    widget.appendToLastMessage(`✅ Tool result: ${event.content}`);
-                    break;
-                    
-                case 'STATE_SNAPSHOT':
-                    updateAppState(event.snapshot);
-                    break;
-                    
-                case 'STATE_DELTA':
-                    applyStateDelta(event.delta);
-                    break;
-                    
-                case 'MESSAGES_SNAPSHOT':
-                    // Load complete conversation history
-                    event.messages.forEach(message => {
-                        widget.addMessage(message);
-                    });
-                    break;
-                    
-                case 'RUN_FINISHED':
-                    widget.setTyping(false);
-                    widget.setSubmittable(true);
-                    break;
-                    
-                case 'RUN_ERROR':
-                    widget.setTyping(false);
-                    widget.setSubmittable(true);
-                    widget.appendToLastMessage(`❌ Error: ${event.message}`);
-                    break;
-                    
-                default:
-                    console.log('Unhandled event type:', event.type);
-                    break;
-            }
-        },
-        complete: () => {
-            widget.setTyping(false);
-            widget.setSubmittable(true);
-        },
-        error: (error) => {
-            widget.setTyping(false);
-            widget.setSubmittable(true);
-            widget.appendToLastMessage('Error: ' + error.message);
-        }
-    });
-});
-            </div>
-        </div>
-
-        <div class="demo-section">
-            <h2>AG-UI SDK Installation</h2>
-            <p>To use AG-UI protocol, you need to install the AG-UI SDK:</p>
-            <div class="code-block">
-npm install @ag-ui/client
-npm install @ag-ui/core
-npm install rxjs
-            </div>
-            
-            <p><strong>Or load directly in the browser:</strong></p>
-            <div class="code-block">
-// Import directly from CDN (if the SDK supports ES modules)
-import { HttpAgent } from 'https://unpkg.com/@ag-ui/client@latest/dist/index.esm.js';
-import { EventType } from 'https://unpkg.com/@ag-ui/core@latest/dist/index.esm.js';
-            </div>
-        </div>
-
-        <div class="demo-section">
-            <h2>Event Log</h2>
-            <div id="eventLog" class="log"></div>
+            <h2>AG-UI</h2>
+            <p>This demo showcases the Agent UI widget's flexible event-driven architecture that works seamlessly with the AG-UI protocol.</p>
+            <p>The widget was built with an open event/callback design that makes it highly adaptable. I've included HttpEvents objects from the <a href="https://github.com/ag-ui-protocol/ag-ui" target="_blank">AG-UI protocol</a> for the cleanest and easiest interaction with APIs that implement the AG-UI protocol, but you can implement it any way you'd like.</p>
+            <p>As you can see in the source code below, the widget listens for various AG-UI events like <code>onRunStartedEvent</code>, <code>onTextMessageContentEvent</code>, <code>onToolCallStartEvent</code>, and more to provide real-time updates to the user interface.</p>
+            <p>To get this demo working, simply provide the local or public URL to your AG-UI API endpoint in the configuration below.</p>
         </div>
     </div>
 
@@ -140,17 +24,80 @@ import { EventType } from 'https://unpkg.com/@ag-ui/core@latest/dist/index.esm.j
     <script>
         const widget = document.querySelector('agent-ui');
         widget.conversationTitle = 'AG-UI Demo';
-        widget.addEventListener('message', (e) => {
-            logEvent(`User asked: "${e.detail.query}"`, 'info');
-            widget.setTyping(true);
-            widget.setSubmittable(false);
-            setTimeout(() => {
-                widget.setTyping(false);
-                widget.appendToLastMessage(getRandomResponse());
-                widget.setSubmittable(true);
-            }, 2000);
+        
+        const agent = widget.configureHttpAgent({
+            url: 'http://example.com',
+            headers: { 'Authorization': 'Bearer demo-key' }
         });
-        logEvent('Widget initialized', 'info');
+        
+        widget.addEventListener('message', async (e) => {
+            // Generate runId (in a real app, this would come from your app state)
+            const runId = `run_${Date.now()}`;
+            
+            // Add the user message to the agent's conversation history
+            agent.messages.push({
+                id: `msg_${Date.now()}`,
+                role: 'user',
+                content: e.detail.query
+            });
+            
+            try {
+                // Run the agent with proper parameters
+                const result = await agent.runAgent({
+                    runId,
+                    tools: [], // Add any tools you want to make available
+                    context: [], // Add any context you want to pass
+                    forwardedProps: {
+                        // Any additional properties you want to forward
+                    }
+                }, {
+                    // Event subscriber for handling streaming events
+                    onRunStartedEvent: ({ event }) => {
+                        console.log('AG-UI event:', event);
+                        widget.setTyping(true);
+                        widget.setSubmittable(false);
+                    },
+                    onTextMessageStartEvent: ({ event }) => {
+                        console.log('AG-UI event:', event);
+                        widget.appendToLastMessage('');
+                    },
+                    onTextMessageContentEvent: ({ event, textMessageBuffer }) => {
+                        console.log('AG-UI event:', event);
+                        widget.appendToLastMessage(event.delta);
+                    },
+                    onTextMessageEndEvent: ({ event, textMessageBuffer }) => {
+                        console.log('AG-UI event:', event);
+                    },
+                    onToolCallStartEvent: ({ event }) => {
+                        console.log('AG-UI event:', event);
+                        widget.appendToLastMessage(`🔧 Calling tool: ${event.toolCallName}\n\n`);
+                    },
+                    onToolCallResultEvent: ({ event }) => {
+                        console.log('AG-UI event:', event);
+                        widget.appendToLastMessage(`✅ Tool result: ${event.content}\n\n`);
+                    },
+                    onRunFinishedEvent: ({ event, result }) => {
+                        console.log('AG-UI event:', event);
+                        widget.setTyping(false);
+                        widget.setSubmittable(true);
+                    },
+                    onRunErrorEvent: ({ event }) => {
+                        console.log('AG-UI event:', event);
+                        widget.setTyping(false);
+                        widget.setSubmittable(true);
+                        widget.appendToLastMessage(`❌ Error: ${event.message}\n\n`);
+                    }
+                });
+                
+                console.log('Agent run completed:', result);
+                
+            } catch (error) {
+                console.error('Agent error:', error);
+                widget.setTyping(false);
+                widget.setSubmittable(true);
+                widget.appendToLastMessage(`❌ Error: ${error.message}`);
+            }
+        });
     </script>
 </body>
 </html> 

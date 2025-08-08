@@ -2,6 +2,13 @@
 
 A modern, responsive, accessible chat widget for any web application. Built with [TypeScript](https://github.com/microsoft/TypeScript), [Lit](https://github.com/lit/lit), [Marked](https://github.com/markedjs/marked), [DOMPurity](https://github.com/cure53/DOMPurify), [Lucide Icons](https://github.com/lucide-icons/lucide).
 
+The widget is designed to not be tied to a single wire format — it can render updates from plain text streams, NDJSON events, or full AG-UI/SSE sessions.
+	- Use plain text when you just want to stream generated text directly into the UI.
+	- Use [NDJSON](https://github.com/ndjson/ndjson-spec) for lightweight structured events like tokens, errors, and simple tool outputs.
+	- Use [AG-UI/SSE](https://github.com/ag-ui-protocol/ag-ui) when you want the richest experience, with tool calls, state snapshots/deltas, and multi-channel agent interactions.
+
+No matter which approach your backend supports, you can hook into the stream, parse it appropriately, and keep the UI in sync in real-time.
+
 ## Including Agent UI in Your App/Page
 
 ### Option 1 -  jsDelivr CDN

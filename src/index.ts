@@ -3,6 +3,7 @@ import { customElement, state, property } from 'lit/decorators.js';
 import { Message, DisplayMode, ExpandedMode } from './types.js';
 import { parseMarkdown, sanitizeText, loadIconFromUrl, copyToClipboard, applyPanelModeStyles, removePanelModeStyles } from './utils.js';
 import { PANEL_WIDTH, PANEL_MARGIN_RIGHT, TRANSITION_DURATION, PANEL_TRANSITION_DURATION, CSS_VARIABLES, KEYBOARD_SHORTCUTS, CSS_CLASSES } from './constants.js';
+import { HttpAgent } from '@ag-ui/client';
 
 @customElement('agent-ui')
 export class AgentUI extends LitElement {
@@ -481,6 +482,18 @@ export class AgentUI extends LitElement {
         container.style.bottom = value ? '0' : '';
       }
     });
+  }
+
+  // AG-UI HttpAgent Configuration
+  private httpAgent: HttpAgent | null = null;
+
+  configureHttpAgent(config: any): HttpAgent {
+    this.httpAgent = new HttpAgent(config);
+    return this.httpAgent;
+  }
+
+  getHttpAgent(): HttpAgent | null {
+    return this.httpAgent;
   }
 
   setTyping(typing: boolean): void {
