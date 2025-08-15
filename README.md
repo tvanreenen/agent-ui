@@ -4,6 +4,8 @@ A modern, responsive, accessible chat widget that can unobtrusively be added to 
 
 ![Demo](examples/demo.gif)
 
+[Interactive Demo on Codepen.io](https://codepen.io/TVR/full/dPYJmwB)
+
 As agents become a deeper, more prominent part of applications—and increasingly the primary interface—Agent UI offers an opinionated, transitional design that makes chat and commands an accessible, ever‑present capability without getting in your way. It’s always available via the bottom command line, and when you engage it, it adapts to the appropriate modality and space: focused dialog or non-overlaying side panel.
 
 From a technical, communication perspective, the widget is also designed to not be tied to a single wire format — it can render updates from plain text streams, NDJSON events, or full AG-UI/SSE sessions.
