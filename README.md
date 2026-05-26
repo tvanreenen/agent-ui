@@ -47,11 +47,11 @@ See the [jsDelivr GitHub helper](https://www.jsdelivr.com/github) to convert URL
 
 ### Option 2 — Pre-built file
 
-Clone the repository, check out the desired version tag, and use `dist/agent-ui.js`. If `dist/` is missing, run `npm install` and `npm run build` first.
+Clone the repository, check out the desired version tag, and use `dist/agent-ui.js`. If `dist/` is missing, run `pnpm install` and `pnpm build` first.
 
 ### Option 3 — Build from source
 
-Clone the repository, navigate to the project, and run `npm run build` to produce the compiled bundle in `dist/`.
+Clone the repository, navigate to the project, and run `pnpm build` to produce the compiled bundle in `dist/`.
 
 ## Using Agent UI in HTML
 

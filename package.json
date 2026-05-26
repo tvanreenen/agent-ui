@@ -1,7 +1,8 @@
 {
+  "packageManager": "pnpm@10.15.1",
   "scripts": {
     "build": "esbuild src/index.ts --bundle --outfile=dist/agent-ui.js --format=iife --target=es2020 --sourcemap --minify && cp dist/agent-ui.js* examples/",
-    "server": "npx serve examples -p 3000"
+    "server": "pnpm exec serve examples -p 3000"
   },
   "dependencies": {
     "@ag-ui/client": "^0.0.35",
@@ -11,6 +12,7 @@
   },
   "devDependencies": {
     "esbuild": "^0.25.8",
+    "serve": "14.2.5",
     "typescript": "^5.8.3"
   }
 }
