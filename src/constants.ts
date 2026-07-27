@@ -2,6 +2,7 @@ export const PANEL_WIDTH = 400;
 export const PANEL_MARGIN_RIGHT = `${PANEL_WIDTH}px`;
 export const TRANSITION_DURATION = '0.4s ease';
 export const PANEL_TRANSITION_DURATION = '0.8s cubic-bezier(0.4, 0, 0.2, 1)';
+export const SCROLL_BOTTOM_THRESHOLD = 32;
 
 export const CSS_VARIABLES = {
   HEADER_HEIGHT: '--agent-ui-header-height',
@@ -34,4 +35,4 @@ export const CSS_CLASSES = {
   TYPING_INDICATOR: 'typing-indicator',
   HEADER_BAR: 'header-bar',
   HEADER_TITLE: 'header-title'
-} as const; 
+} as const;

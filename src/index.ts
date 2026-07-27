@@ -2,7 +2,7 @@ import { LitElement, html, css } from 'lit';
 import { customElement, state, property } from 'lit/decorators.js';
 import { Message, DisplayMode, ExpandedMode } from './types.js';
 import { parseMarkdown, sanitizeText, loadIconFromUrl, copyToClipboard, applyPanelModeStyles, removePanelModeStyles } from './utils.js';
-import { PANEL_WIDTH, PANEL_MARGIN_RIGHT, TRANSITION_DURATION, PANEL_TRANSITION_DURATION, CSS_VARIABLES, KEYBOARD_SHORTCUTS, CSS_CLASSES } from './constants.js';
+import { PANEL_WIDTH, PANEL_MARGIN_RIGHT, TRANSITION_DURATION, PANEL_TRANSITION_DURATION, SCROLL_BOTTOM_THRESHOLD, CSS_VARIABLES, KEYBOARD_SHORTCUTS, CSS_CLASSES } from './constants.js';
 import { HttpAgent } from '@ag-ui/client';
 
 @customElement('agent-ui')
@@ -461,6 +461,8 @@ export class AgentUI extends LitElement {
   @state() private isSubmittable: boolean = true;
   @state() private currentMode: DisplayMode = 'min';
   @state() private lastExpandedMode: ExpandedMode = 'dialog';
+  private followLatest: boolean = true;
+  private lastMessageScrollTop: number = 0;
 
   // Public API methods
   setOpen(value: boolean): void {
@@ -474,12 +476,16 @@ export class AgentUI extends LitElement {
     
     if (value) {
       this.inputFocused = false;
+      this.followLatest = true;
     }
     
     this.updateComplete.then(() => {
       const container = this.shadowRoot?.querySelector(`.${CSS_CLASSES.CONTAINER}`) as HTMLElement;
       if (container) {
         container.style.bottom = value ? '0' : '';
+      }
+      if (value) {
+        this._scrollToBottom();
       }
     });
   }
@@ -510,7 +516,7 @@ export class AgentUI extends LitElement {
     if (this.messages.length === 0) {
       this.messages = [{ type: 'agent', text: content }];
       this.requestUpdate();
-      this.updateComplete.then(() => this._scrollToBottom());
+      this.updateComplete.then(() => this._scrollToBottomIfFollowing());
       return;
     }
 
@@ -521,11 +527,11 @@ export class AgentUI extends LitElement {
         { ...lastMessage, text: content }
       ];
       this.requestUpdate();
-      this.updateComplete.then(() => this._scrollToBottom());
+      this.updateComplete.then(() => this._scrollToBottomIfFollowing());
     } else {
       this.messages = [...this.messages, { type: 'agent', text: content }];
       this.requestUpdate();
-      this.updateComplete.then(() => this._scrollToBottom());
+      this.updateComplete.then(() => this._scrollToBottomIfFollowing());
     }
   }
 
@@ -533,7 +539,7 @@ export class AgentUI extends LitElement {
     if (this.messages.length === 0) {
       this.messages = [{ type: 'agent', text: content }];
       this.requestUpdate();
-      this.updateComplete.then(() => this._scrollToBottom());
+      this.updateComplete.then(() => this._scrollToBottomIfFollowing());
       return;
     }
 
@@ -545,11 +551,11 @@ export class AgentUI extends LitElement {
         { ...lastMessage, text: updatedText }
       ];
       this.requestUpdate();
-      this.updateComplete.then(() => this._scrollToBottom());
+      this.updateComplete.then(() => this._scrollToBottomIfFollowing());
     } else {
       this.messages = [...this.messages, { type: 'agent', text: content }];
       this.requestUpdate();
-      this.updateComplete.then(() => this._scrollToBottom());
+      this.updateComplete.then(() => this._scrollToBottomIfFollowing());
     }
   }
 
@@ -567,7 +573,33 @@ export class AgentUI extends LitElement {
     const messageContainer = this.shadowRoot?.querySelector(`.${CSS_CLASSES.MESSAGE_CONTAINER}`);
     if (messageContainer) {
       messageContainer.scrollTop = messageContainer.scrollHeight;
+      this.lastMessageScrollTop = messageContainer.scrollTop;
     }
+  }
+
+  private _scrollToBottomIfFollowing(): void {
+    if (this.followLatest) {
+      this._scrollToBottom();
+    }
+  }
+
+  private _handleMessageScroll(e: Event): void {
+    const messageContainer = e.currentTarget as HTMLElement;
+    const scrollTop = messageContainer.scrollTop;
+    const scrollingUp = scrollTop < this.lastMessageScrollTop;
+    const scrollingDown = scrollTop > this.lastMessageScrollTop;
+    const distanceFromBottom = Math.max(
+      0,
+      messageContainer.scrollHeight - scrollTop - messageContainer.clientHeight
+    );
+
+    if (scrollingUp && distanceFromBottom > SCROLL_BOTTOM_THRESHOLD) {
+      this.followLatest = false;
+    } else if (scrollingDown && distanceFromBottom <= SCROLL_BOTTOM_THRESHOLD) {
+      this.followLatest = true;
+    }
+
+    this.lastMessageScrollTop = scrollTop;
   }
 
   private _parseMessageContent(content: string, isUserMessage: boolean): string {
@@ -672,6 +704,7 @@ export class AgentUI extends LitElement {
     if (input && input.value.trim()) {
       const messageText = input.value;
       const sanitizedMessage = sanitizeText(messageText);
+      this.followLatest = true;
       this.messages = [...this.messages, { type: 'user', text: sanitizedMessage }];
       this.requestUpdate();
       this.updateComplete.then(() => this._scrollToBottom());
@@ -744,6 +777,16 @@ export class AgentUI extends LitElement {
     }
     
     this.updateComplete.then(() => {
+      this._scrollToBottomIfFollowing();
+      const container = this.shadowRoot?.querySelector(`.${CSS_CLASSES.CONTAINER}`);
+      const handleTransitionEnd = (event: Event): void => {
+        if (event.target !== container) {
+          return;
+        }
+        container?.removeEventListener('transitionend', handleTransitionEnd);
+        this._scrollToBottomIfFollowing();
+      };
+      container?.addEventListener('transitionend', handleTransitionEnd);
       const input = this.shadowRoot?.querySelector(`.${CSS_CLASSES.INPUT_FIELD}`) as HTMLInputElement;
       if (input) {
         input.focus();
@@ -762,7 +805,7 @@ export class AgentUI extends LitElement {
           <div class="${CSS_CLASSES.HEADER_BAR}">
             <h2 class="${CSS_CLASSES.HEADER_TITLE}">${this.conversationTitle}</h2>
           </div>
-          <div class="${CSS_CLASSES.MESSAGE_CONTAINER}">
+          <div class="${CSS_CLASSES.MESSAGE_CONTAINER}" @scroll=${this._handleMessageScroll}>
             ${this.messages.map(msg => html`
               <div class="${CSS_CLASSES.MESSAGE} ${msg.type}-message">
                 <div class="message-text" .innerHTML=${this._parseMessageContent(msg.text, msg.type === 'user')}></div>
