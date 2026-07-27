@@ -1,0 +1,5 @@
+allowBuilds:
+  esbuild: true
+minimumReleaseAgeExclude:
+  - jsdom@30.0.0
+preferSymlinkedExecutables: true
