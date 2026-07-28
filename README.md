@@ -34,13 +34,13 @@ Take any GitHub file URL and convert it to jsDelivr format:
 **GitHub source URL:**
 
 ```
-https://github.com/tvanreenen/agent-ui/blob/v1.0.1/dist/agent-ui.js
+https://github.com/tvanreenen/agent-ui/blob/v1.1.0/dist/agent-ui.js
 ```
 
 **jsDelivr CDN URL:**
 
 ```
-https://cdn.jsdelivr.net/gh/tvanreenen/agent-ui@v1.0.1/dist/agent-ui.js
+https://cdn.jsdelivr.net/gh/tvanreenen/agent-ui@v1.1.0/dist/agent-ui.js
 ```
 
 See the [jsDelivr GitHub helper](https://www.jsdelivr.com/github) to convert URLs automatically.
@@ -79,7 +79,7 @@ Paste a loader that fetches the script, registers the custom element, and mounts
 
 ```js
 const s = document.createElement('script');
-s.src = 'https://cdn.jsdelivr.net/gh/tvanreenen/agent-ui@v1.0.1/dist/agent-ui.js';
+s.src = 'https://cdn.jsdelivr.net/gh/tvanreenen/agent-ui@v1.1.0/dist/agent-ui.js';
 s.onload = () => {
   const el = document.createElement('agent-ui');
   document.body.append(el);
